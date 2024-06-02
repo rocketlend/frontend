@@ -4,6 +4,7 @@
 
 .main {
   min-height: 100vh;
+  width: 100%;
   padding: 4rem 0;
   flex: 1;
   display: flex;
@@ -12,6 +13,11 @@
   align-items: center;
 }
 
+
+
+.header {
+  background-color: #d6dbdf;
+}
 .footer {
   display: flex;
   flex: 1;
@@ -94,9 +100,83 @@
   line-height: 1.5;
 }
 
-@media (max-width: 600px) {
+
+
+.uniButton {
+  background-color: rgb(255 110 48);
+  color: white;
+  padding: 10px 12px;
+  transition: 0.2s all ease-in-out;
+  font-weight: 500;
+  border-radius: 30px;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  font-size: 17px;
+  text-transform: uppercase;
+
+  
+}
+
+
+.walletContainer {
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.25);
+  padding: 10px;
+  cursor: pointer;
+  color: #222;
+  margin: 1vh 0;
+}
+
+
+.chainIcon {
+  color: #222;
+}
+
+.chainIcon:hover {
+  color: #555;
+}
+
+
+.accountIcon {
+  color: #222;
+
+}
+
+
+.accountIcon:hover {
+  color: #555;
+}
+
+
+
+.heroWrapper {
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: start;
+  gap: 0.5rem;
+  margin-top: 7vh;
+  
+  
+}
+
+
+.uniButton:hover {
+
+  background-color: rgb(254, 88, 16);
+
+}
+
+@media (max-width: 1000px) {
   .grid {
     width: 100%;
     flex-direction: column;
+  }
+
+  .heroWrapper{
+    margin-top: 0vh;
+    justify-content: center;
   }
 }
