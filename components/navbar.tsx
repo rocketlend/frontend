@@ -14,6 +14,7 @@ const Navbar: NextPage = () => {
 
 
   const { address } = useAccount({
+   
 
   })
 
@@ -36,7 +37,7 @@ const Navbar: NextPage = () => {
   return (
 
 
-    <header style={{ backgroundColor: "#e4ebf0" }} className="p-2 w-full h-auto bg-white flex flex-col items-center justify-center sticky top-0 z-50 shadow-md lg:h-[8vh]">
+    <header style={{ backgroundColor: "#eeeff2" }} className="p-2 w-full h-auto bg-white flex flex-col items-center justify-center sticky top-0 z-50 shadow-md lg:h-[8vh]">
 
       <div className="mx-auto w-[90%] flex items-center justify-center gap-5">
         <div className="flex h-14 items-center  justify-between w-full rounded-lg md:px-3">
@@ -128,30 +129,30 @@ const Navbar: NextPage = () => {
 
                           return (
                             <div  className={styles.walletContainer} style={{ display: 'flex', gap: 12 }}>
-                              <button
-                               className={styles.chainIcon}
+                              <button  className={styles.chainIcon}
+                              
                                 onClick={openChainModal}
                                 style={{ display: 'flex', alignItems: 'center' }}
                                 type="button"
                               >
                                 {chain.hasIcon && (
                                   <div
-
+                                 
                                  
                                     style={{
                                       background: chain.iconBackground,
-                                      width: 12,
-                                      height: 12,
+                                      width: 25,
+                                      height: 25,
                                       borderRadius: 999,
                                       overflow: 'hidden',
-                                      marginRight: 4,
+                                      marginRight: 8,
                                     }}
                                   >
                                     {chain.iconUrl && (
                                       <img
                                         alt={chain.name ?? 'Chain icon'}
                                         src={chain.iconUrl}
-                                        style={{ width: 12, height: 12 }}
+                                        style={{ width: 25, height: 25 }}
                                       />
                                     )}
                                   </div>

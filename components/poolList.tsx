@@ -35,10 +35,10 @@ const PoolList: NextPage = () => {
     return (
 
 
-        <div style={{ backgroundColor: "#BAC3CA" }} className='w-full h-[90vh] flex flex-col gap-[10vh] items-center justify-center'>
+        <div style={{ backgroundColor: "#eeeff2" }} className='w-full h-[90vh] flex flex-col gap-[10vh] items-center justify-center'>
 
 
-            <h1 className="text-4xl font-bold text-white">Active Pools</h1>
+            <h1 style={{color: "#BAC3CA"}} className="text-4xl font-bold ">Active Pools</h1>
 
 
             <div id="accountTable" className="w-[90%] h-auto lg:w-auto overflow-scroll shadow-xl bg-white border rounded-lg mb-10 ">

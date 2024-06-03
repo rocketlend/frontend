@@ -131,21 +131,26 @@
 
 .chainIcon {
   color: #222;
+  font-weight: bold;
+  transition: 0.2s all ease-in-out;
+ 
 }
 
 .chainIcon:hover {
-  color: #555;
+  color: goldenrod;
 }
 
 
 .accountIcon {
   color: #222;
+  font-weight: bold;
+  transition: 0.2s all ease-in-out;
 
 }
 
 
 .accountIcon:hover {
-  color: #555;
+  color: goldenrod;
 }
 
 
