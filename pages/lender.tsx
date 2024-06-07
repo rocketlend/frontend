@@ -7,9 +7,9 @@ import Image from 'next/image';
 import PoolList from '../components/poolList';
 import { MdNoAccounts } from "react-icons/md";
 import { useAccount, useChainId } from 'wagmi';
-import { ethers } from 'ethers';
+import { Signature, ethers } from 'ethers';
 import rocketlendABI from "../json/rocketlendABI.json"
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 
 const Lender: NextPage = () => {
@@ -26,9 +26,48 @@ const Lender: NextPage = () => {
 
     })
 
-    const currentRocketlendAddress = "0x2c8ED11fd7A058096F2e5828799c68BE88744E2F";
+    const currentRocketlendAddress = "0x975Ab64F4901Af5f0C96636deA0b9de3419D0c2F";
+    const receiptHashForDebugging = "0xb0ac69aadfe6ee2d867bc8d9f00dacd74b87781043c8ce9b7d0d66f67b89ec87"
+
+    const logTemplate = [{
+        "fragment": {
+            "type": "event",
+            "inputs": [
+                { "name": "id", "type": "uint256", "baseType": "uint256", "indexed": true, "components": null, "arrayLength": null, "arrayChildren": null },
+                { "name": "who", "type": "address", "baseType": "address", "indexed": true, "components": null, "arrayLength": null, "arrayChildren": null }
+            ],
+            "name": "RegisterLender",
+            "anonymous": false
+        },
+
+        "name": "RegisterLender", 
+        "signature": 
+        "RegisterLender(uint256,address)", 
+        "topic": "0x7121871900228678cccfba216ebcaa55b46b7c0b9188d6da01383474b7bc2ac8",
+         "args": ["1", "0x90F65AC5e93D482a09C4a27c830b69Bdd0d2DA71"]
+    }]
 
 
+
+
+
+
+    const [registrationChecked, setRegistrationChecked] = useState(false)
+    const [lenderId, setLenderId] = useState(0)
+
+
+
+
+    useEffect(() => {
+
+        console.log(registrationChecked + " and " + lenderId)
+
+    }, [lenderId])
+
+
+
+
+    
     const getRegistrationLog = async () => {
 
         try {
@@ -39,7 +78,6 @@ const Lender: NextPage = () => {
 
             let signer = await browserProvider.getSigner()
 
-            // Only required when `chainId` is not provided in the `Provider` constructor
 
 
             const rocketlendContract = new ethers.Contract(currentRocketlendAddress, rocketlendABI, signer);
@@ -50,9 +88,43 @@ const Lender: NextPage = () => {
 
             console.log(latestBlockNum - 10000)
 
-            const data = await rocketlendContract.queryFilter("RegisterLender", 1659117, 1659119)
+            const data = await rocketlendContract.queryFilter("RegisterLender", latestBlockNum - 10000, latestBlockNum)
 
             console.log(data)
+
+
+            if(data.length > 0) {
+
+
+                setRegistrationChecked(true)
+
+
+                const realReceipt = await browserProvider.getTransactionReceipt(data[0].transactionHash)
+
+
+                const logsFromReceipt = realReceipt !== null ? realReceipt.logs.map((log: any) => rocketlendContract.interface.parseLog(log)) : []
+
+                if( logsFromReceipt[0] !== null ) {
+                    console.log(logsFromReceipt[0].args[0])
+                    setLenderId(logsFromReceipt[0].args[0])
+
+
+                }
+    
+            
+
+
+
+            } else {
+
+            }
+
+            
+
+
+           
+
+
 
 
         } catch (e: any) {
@@ -73,24 +145,19 @@ const Lender: NextPage = () => {
 
     useEffect(() => {
 
-        if (address !== undefined) {
-            getRegistrationLog();
-        }
+        getRegistrationLog();
 
-
-
-    }, [address])
+    }, [])
 
 
 
 
 
-    const registerLender = async () => {
-
+    const createLendingPool = async () => {
 
         try {
 
-            console.log("Running register")
+            console.log("Running get Registration logs")
             let browserProvider = new ethers.BrowserProvider((window as any).ethereum)
 
 
@@ -100,14 +167,16 @@ const Lender: NextPage = () => {
 
 
             const rocketlendContract = new ethers.Contract(currentRocketlendAddress, rocketlendABI, signer);
+            const latestBlockNum = await browserProvider.getBlockNumber();
 
 
-            const tx = await rocketlendContract.registerLender()
+            console.log(latestBlockNum)
 
-            const receipt = await tx.wait()
+            console.log(latestBlockNum - 10000)
 
+          //  const data = await rocketlendContract.createPool(_params: PoolParams, _andSupply: uint256, _allowance: uint256)
 
-            console.log(receipt)
+          //  console.log(data)
 
 
         } catch (e: any) {
@@ -121,9 +190,65 @@ const Lender: NextPage = () => {
         }
 
 
+    }
+
+
+
+
+
+    const registerLenderVersion2 = async () => {
+
+        try {
+
+            console.log("Running get Registration logs")
+            let browserProvider = new ethers.BrowserProvider((window as any).ethereum)
+
+            let signer = await browserProvider.getSigner()
+            const account = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80').connect(browserProvider)
+
+            const rocketlend = new ethers.Contract('0x975Ab64F4901Af5f0C96636deA0b9de3419D0c2F',
+                ['function registerLender() returns (uint256)', 'event RegisterLender (uint256 indexed id, address indexed who)'], signer)
+
+            const tx = await rocketlend.registerLender()
+
+            const receipt = await tx.wait()
+            console.log(`Submitted tx with hash ${receipt.hash} @ ${receipt.blockNumber}`)
+
+            const logsFromReceipt = receipt.logs.map((log: any) => rocketlend.interface.parseLog(log))
+
+            const stringifyBI = (x: any) => JSON.stringify(x, (_, v) => typeof v === 'bigint' ? v.toString() : v)
+
+            console.log(`Logs from receipt: ${stringifyBI(logsFromReceipt)}`)
+
+            const logsFromRange = await rocketlend.queryFilter('RegisterLender', receipt.blockNumber - 1, receipt.blockNumber + 1)
+
+            console.log(`Logs from range: ${stringifyBI(logsFromRange)}`)
+
+
+
+        } catch (e: any) {
+
+
+            console.log(e)
+
+            alert(e)
+
+
+        }
 
 
     }
+
+
+
+
+
+
+
+
+
+
+ 
 
 
 
@@ -176,7 +301,7 @@ const Lender: NextPage = () => {
 
                         <h2 style={{ color: "rgb(110 117 124)" }} className="text-xl mb-[1vh] text-center w-[90%]">Register with Rocketlend as a <span style={{ color: "rgb(255 110 48)" }}>Lender</span> to begin</h2>
                         <div className="flex items-center justify-center gap-3 mb-[0vh] lg:mb-[6vh]">
-                            <button className={styles.uniButton} onClick={registerLender}>Register</button>
+                            <button className={styles.uniButton} onClick={registerLenderVersion2}>Register</button>
 
                         </div>
 
