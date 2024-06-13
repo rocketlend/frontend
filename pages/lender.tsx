@@ -10,6 +10,9 @@ import { useAccount, useChainId } from 'wagmi';
 import { Signature, ethers } from 'ethers';
 import rocketlendABI from "../json/rocketlendABI.json"
 import { useEffect, useState } from 'react';
+import SliderComponent from '../components/slider';
+import storageABI from "../json/storageABI.json"
+import tokenABI from "../json/tokenABI.json"
 
 
 const Lender: NextPage = () => {
@@ -22,12 +25,19 @@ const Lender: NextPage = () => {
 
 
     const { address } = useAccount({
+        onConnect: ({ address }) => {
+            getRegistrationLog()
+
+
+
+
+        }
 
 
     })
 
-    const currentRocketlendAddress = "0x975Ab64F4901Af5f0C96636deA0b9de3419D0c2F";
-    const receiptHashForDebugging = "0xb0ac69aadfe6ee2d867bc8d9f00dacd74b87781043c8ce9b7d0d66f67b89ec87"
+    const currentRocketlendAddress = "0xf5c4a909455C00B99A90d93b48736F3196DB5621";
+
 
     const logTemplate = [{
         "fragment": {
@@ -40,11 +50,11 @@ const Lender: NextPage = () => {
             "anonymous": false
         },
 
-        "name": "RegisterLender", 
-        "signature": 
-        "RegisterLender(uint256,address)", 
+        "name": "RegisterLender",
+        "signature":
+            "RegisterLender(uint256,address)",
         "topic": "0x7121871900228678cccfba216ebcaa55b46b7c0b9188d6da01383474b7bc2ac8",
-         "args": ["1", "0x90F65AC5e93D482a09C4a27c830b69Bdd0d2DA71"]
+        "args": ["1", "0x90F65AC5e93D482a09C4a27c830b69Bdd0d2DA71"]
     }]
 
 
@@ -67,7 +77,7 @@ const Lender: NextPage = () => {
 
 
 
-    
+
     const getRegistrationLog = async () => {
 
         try {
@@ -93,7 +103,7 @@ const Lender: NextPage = () => {
             console.log(data)
 
 
-            if(data.length > 0) {
+            if (data.length > 0) {
 
 
                 setRegistrationChecked(true)
@@ -104,14 +114,14 @@ const Lender: NextPage = () => {
 
                 const logsFromReceipt = realReceipt !== null ? realReceipt.logs.map((log: any) => rocketlendContract.interface.parseLog(log)) : []
 
-                if( logsFromReceipt[0] !== null ) {
+                if (logsFromReceipt[0] !== null) {
                     console.log(logsFromReceipt[0].args[0])
                     setLenderId(logsFromReceipt[0].args[0])
 
 
                 }
-    
-            
+
+
 
 
 
@@ -119,10 +129,10 @@ const Lender: NextPage = () => {
 
             }
 
-            
 
 
-           
+
+
 
 
 
@@ -152,12 +162,52 @@ const Lender: NextPage = () => {
 
 
 
+    const [dateTime, setDateTime] = useState('')
+    const [days, setDays] = useState(0)
+    const [milliseconds, setMilliseconds] = useState(0)
+    const [interest, setInterest] = useState(0)
+
+    const [RPLToLend, setRPLToLend] = useState('')
+
+
+    const [poolInterestRate, setPoolInterestRate] = useState(0)
+    const [poolAllowance, setPoolAllowance] = useState(0)
+
+
+
+    const currentChain = useChainId();
+
+    const storageAddress = currentChain === 17000 ? "0x594Fb75D3dc2DFa0150Ad03F99F97817747dd4E1" : "0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46"
+
+
+
+
+
+
 
     const createLendingPool = async () => {
 
+        const PoolParams = {
+            lender: lenderId,
+            interestRate: ethers.parseEther(poolInterestRate.toString()),
+            endTime: milliseconds,
+            protocolFee: BigInt(20)
+        }
+
+
+
+
+
+
+
+
+
+
+
+
         try {
 
-            console.log("Running get Registration logs")
+            console.log("Running Create Lending Pool...")
             let browserProvider = new ethers.BrowserProvider((window as any).ethereum)
 
 
@@ -165,18 +215,65 @@ const Lender: NextPage = () => {
 
             // Only required when `chainId` is not provided in the `Provider` constructor
 
+            const storageContract = new ethers.Contract(storageAddress, storageABI, signer);
 
-            const rocketlendContract = new ethers.Contract(currentRocketlendAddress, rocketlendABI, signer);
-            const latestBlockNum = await browserProvider.getBlockNumber();
+            console.log("It makes it here...")
 
 
-            console.log(latestBlockNum)
+            const tokenAddress = await storageContract["getAddress(bytes32)"](ethers.id("contract.addressrocketTokenRPL"));
 
-            console.log(latestBlockNum - 10000)
 
-          //  const data = await rocketlendContract.createPool(_params: PoolParams, _andSupply: uint256, _allowance: uint256)
+            console.log("Then here...")
 
-          //  console.log(data)
+            const tokenContract = new ethers.Contract(tokenAddress, tokenABI, signer);
+
+
+
+
+            const val = ethers.parseEther(RPLToLend);
+
+            console.log("HERE?")
+
+            const approvalTx = await tokenContract.approve(currentRocketlendAddress, val);
+            console.log("Approval transaction:", approvalTx.hash);
+
+
+            
+            console.log("And then here...")
+
+
+            const approvalReceipt = await approvalTx.wait()
+
+
+            if (approvalReceipt.status === 1) {
+
+                const rocketlendContract = new ethers.Contract(currentRocketlendAddress, rocketlendABI, signer);
+                const latestBlockNum = await browserProvider.getBlockNumber();
+
+
+                console.log(latestBlockNum)
+
+                console.log(latestBlockNum - 10000)
+
+                const tx = await rocketlendContract.createPool(PoolParams, val, ethers.parseEther(poolAllowance.toString()))
+
+                //  console.log(data)
+
+                const receipt = await tx.wait();
+
+                if (receipt.status === 1) {
+                    alert("Sucessfully created a Pool")
+
+                }
+
+
+            } else {
+                alert("ERROR: The approval was not a success. Pleas try again.")
+            }
+
+
+
+
 
 
         } catch (e: any) {
@@ -206,7 +303,7 @@ const Lender: NextPage = () => {
             let signer = await browserProvider.getSigner()
             const account = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80').connect(browserProvider)
 
-            const rocketlend = new ethers.Contract('0x975Ab64F4901Af5f0C96636deA0b9de3419D0c2F',
+            const rocketlend = new ethers.Contract('0xf5c4a909455C00B99A90d93b48736F3196DB5621',
                 ['function registerLender() returns (uint256)', 'event RegisterLender (uint256 indexed id, address indexed who)'], signer)
 
             const tx = await rocketlend.registerLender()
@@ -223,6 +320,7 @@ const Lender: NextPage = () => {
             const logsFromRange = await rocketlend.queryFilter('RegisterLender', receipt.blockNumber - 1, receipt.blockNumber + 1)
 
             console.log(`Logs from range: ${stringifyBI(logsFromRange)}`)
+            const data = await getRegistrationLog()
 
 
 
@@ -248,13 +346,85 @@ const Lender: NextPage = () => {
 
 
 
- 
+
+
+    const [sliderValue, setSliderValue] = useState<number>(0);
+    const [sliderValue2, setSliderValue2] = useState<number>(0);
+    const [sliderValue3, setSliderValue3] = useState<number>(0);
+
+
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setDateTime(value);
+
+        // Convert the datetime-local value to milliseconds
+        const date = new Date(value);
+        let milliseconds = date.getTime();
+        const currentMilliseconds = Date.now();
+
+
+        setMilliseconds(milliseconds)
+
+
+        let newDays = Math.floor((milliseconds - currentMilliseconds) / 86400000)
+
+
+        setDays(newDays)
+    };
+
+
+    const handleRPLToLend = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setRPLToLend(value)
+    }
+
+
+    const handleInterest = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setInterest(Number(value))
+    }
+
+
+
+    const [interestEarned, setInterestEarned] = useState(BigInt(0))
+
+
+    const handleInterestEarned = () => {
+        const newInterestEarned = (BigInt(sliderValue2 * 86400000) * BigInt(sliderValue3) * BigInt(sliderValue))/ ethers.parseUnits("1", "wei")
+        console.log(newInterestEarned)
+        setInterestEarned(newInterestEarned)
+    }
 
 
 
 
 
+    useEffect(() => {
 
+        console.log("RPL for estimate:" + sliderValue)
+        console.log("Milliseconds for estimate:" + sliderValue2)
+        console.log("Interest for estimate: " + sliderValue3)
+
+        handleInterestEarned();
+
+    }, [sliderValue, sliderValue2, sliderValue3])
+
+
+
+
+
+    const handlePoolInterestRate = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setPoolInterestRate(Number(value))
+
+
+    }
+
+    const handlePoolAllowance = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setPoolAllowance(Number(value))
+    }
 
 
 
@@ -280,32 +450,116 @@ const Lender: NextPage = () => {
 
             {address !== undefined ? (
 
-                <div className="h-[92vh]  flex flex-col items-center justify-center ">
+                <div className="md:min-h-[92vh]  h-auto  flex flex-col items-center justify-center ">
 
-                    <div className="flex flex-col items-center justify-center gap-2 mt-[0vh] lg:mt-[7vh]">
+                    {registrationChecked ? (
+
+                        <div className="w-full h-auto flex  items-center justify-center gap-10 mt-[0vh] lg:mt-[7vh]">
+
+                            <div className="w-auto h-auto rounded-[20px] shadow-lg p-[20px]  gap-2 bg-[#fff] flex flex-col items-center justify-center ">
+
+                                <h2 className="text-2xl font-bold mb-3 max-w-[80%] text-center">Interest Earned Calculator</h2>
+                                <SliderComponent min={0} max={Number(RPLToLend)} onChange={setSliderValue} />
+                                <p>RPL borrowed: {sliderValue}</p>
+                                <SliderComponent min={0} max={days} onChange={setSliderValue2} />
+                                <p>Borrow time:  {sliderValue2} Days</p>
+                                <SliderComponent min={0} max={100} onChange={setSliderValue3} />
+                                <p className='text-center max-w-[80%]'>{sliderValue3} attoRPL per RPL borrowed per second.</p>
+
+
+                                <p className="my-4 text-xl text-center max-w-[80%] min-w-[80%] font-bold text-green-400">{ethers.formatEther(interestEarned)} interest earned...</p>
+
+
+                            </div>
+
+
+                            <div className="w-auto h-auto rounded-[20px] shadow-lg p-[20px]  gap-4 bg-[#fff] flex flex-col items-center justify-center ">
+                                <h2 className="text-2xl font-bold mb-3 max-w-[80%] text-center">Create a Lending Pool</h2>
+
+                                <label className='flex flex-col items-center justify-center'>
+                                    <span className='mb-1 text-lg text-gray-400'>RPL for lending:</span>
+                                    <input value={RPLToLend} onChange={handleRPLToLend} className="border border-black-200 shadow-lg text-black-500" type="text" />
+                                </label>
+                                <label className='flex flex-col items-center justify-center'>
+                                    <span className='mb-1 text-lg text-gray-400'>Interest Rate:</span>
+                                    <input value={poolInterestRate} onChange={handlePoolInterestRate} className="border border-black-200 shadow-lg text-black-500" type="text" />
+                                </label>  <label className='flex flex-col items-center justify-center'>
+                                    <span className='mb-1 text-lg text-gray-400'>Allowance:</span>
+                                    <input value={poolAllowance} onChange={handlePoolAllowance} className="border border-black-200 shadow-lg text-black-500" type="text" />
+                                </label>
+                                <label className='flex flex-col items-center justify-center '>
+
+                                    <span className='mb-1 text-lg text-gray-400'>End Time:</span>
+                                    <input
+
+                                        className="w-[60%] self-center border shadow-lg text-black-500 "
+                                        type="datetime-local"
+                                        id="datetime"
+                                        value={dateTime}
+                                        onChange={handleChange}
+                                    />
+                                </label>
+                             
 
 
 
-                        <div className="w-[250px] h-[250px] rounded-full shadow-lg overflow-hidden bg-[#fff] flex flex-col items-center justify-center mb-9">
-                            <Image
-                                height={250}
-                                width={250}
-                                src={'/images/rocketlend-nobg.png'}
-                                alt="Vrun logo"
-                                className="rounded-full"
-                            />
+
+                                <button className={styles.uniButton} onClick={createLendingPool}>CREATE</button>
+
+
+
+
+                            </div>
+
+
+
+
+
+
+
                         </div>
 
 
+                    ) :
+
+                        (
+
+                            <div className="flex flex-col items-center justify-center gap-2 mt-[0vh] lg:mt-[7vh]">
 
 
-                        <h2 style={{ color: "rgb(110 117 124)" }} className="text-xl mb-[1vh] text-center w-[90%]">Register with Rocketlend as a <span style={{ color: "rgb(255 110 48)" }}>Lender</span> to begin</h2>
-                        <div className="flex items-center justify-center gap-3 mb-[0vh] lg:mb-[6vh]">
-                            <button className={styles.uniButton} onClick={registerLenderVersion2}>Register</button>
 
-                        </div>
+                                <div className="w-[250px] h-[250px] rounded-full shadow-lg overflow-hidden bg-[#fff] flex flex-col items-center justify-center mb-9">
+                                    <Image
+                                        height={250}
+                                        width={250}
+                                        src={'/images/rocketlend-nobg.png'}
+                                        alt="Vrun logo"
+                                        className="rounded-full"
+                                    />
+                                </div>
 
-                    </div>
+
+
+
+                                <h2 style={{ color: "rgb(110 117 124)" }} className="text-xl mb-[1vh] text-center w-[90%]">Register with Rocketlend as a <span style={{ color: "rgb(255 110 48)" }}>Lender</span> to begin</h2>
+                                <div className="flex items-center justify-center gap-3 mb-[0vh] lg:mb-[6vh]">
+                                    <button className={styles.uniButton} onClick={registerLenderVersion2}>Register</button>
+
+                                </div>
+
+                            </div>
+
+                        )
+
+
+
+
+                    }
+
+
+
+
+
 
                 </div>
 
