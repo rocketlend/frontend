@@ -36,7 +36,7 @@ const Lender: NextPage = () => {
 
     })
 
-    const currentRocketlendAddress = "0xf5c4a909455C00B99A90d93b48736F3196DB5621";
+    const currentRocketlendAddress = "0x0c626FC4A447b01554518550e30600136864640B";
 
 
     const logTemplate = [{
@@ -180,6 +180,105 @@ const Lender: NextPage = () => {
     const storageAddress = currentChain === 17000 ? "0x594Fb75D3dc2DFa0150Ad03F99F97817747dd4E1" : "0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46"
 
 
+    type protocol =  {
+        fees: number
+feeNumerator: number
+address: string
+pending: string
+    }
+
+    const [currentProtocol, setCurrentProtocol] = useState<protocol>({fees: 0,
+        feeNumerator: 0,
+        address: "admin (that can claim protocol fees and change the rate)",
+        pending:""})
+
+
+
+
+
+
+    const callProtocol = async () => {
+
+        try {
+            let browserProvider = new ethers.BrowserProvider((window as any).ethereum)
+
+
+            let signer = await browserProvider.getSigner()
+
+
+
+            const rocketlendContract = new ethers.Contract(currentRocketlendAddress, rocketlendABI, signer);
+
+
+            const data = await rocketlendContract.protocol()
+
+
+
+            setCurrentProtocol(data)
+
+
+
+        } catch (e) {
+
+        }
+
+
+
+    }
+
+
+    useEffect(() => {
+
+        console.log("CURRENT PROTOCOL:" + currentProtocol)
+
+    }, [currentProtocol])
+
+
+
+
+    useEffect(() => {
+
+
+        const callProtocol = async () => {
+
+            try {
+                let browserProvider = new ethers.BrowserProvider((window as any).ethereum)
+
+
+                let signer = await browserProvider.getSigner()
+
+
+
+                const rocketlendContract = new ethers.Contract(currentRocketlendAddress, rocketlendABI, signer);
+
+
+                const data = await rocketlendContract.protocol()
+
+
+
+                setCurrentProtocol(data)
+
+
+
+            } catch (e) {
+
+            }
+
+
+
+        }
+
+
+        const timer = setTimeout(() => {
+
+
+            callProtocol();
+
+        }, 10000);
+
+        return () => clearTimeout(timer);
+
+    }, [currentProtocol])
 
 
 
@@ -191,10 +290,19 @@ const Lender: NextPage = () => {
             lender: lenderId,
             interestRate: ethers.parseEther(poolInterestRate.toString()),
             endTime: milliseconds,
-            protocolFee: BigInt(20)
+            protocolFee: currentProtocol.feeNumerator
         }
 
 
+
+        console.log("LENDER ID:" + lenderId)
+        console.log("ATTO RPL:" + ethers.parseEther(poolInterestRate.toString()))
+        console.log("END TIME:" + milliseconds)
+        console.log("PROTOCOL FEE " + currentProtocol.feeNumerator)
+
+        console.log("RPL" + ethers.parseEther(RPLToLend))
+        
+        console.log("ALLOWANCE" + ethers.parseEther(poolAllowance.toString()))
 
 
 
@@ -238,7 +346,7 @@ const Lender: NextPage = () => {
             console.log("Approval transaction:", approvalTx.hash);
 
 
-            
+
             console.log("And then here...")
 
 
@@ -303,7 +411,7 @@ const Lender: NextPage = () => {
             let signer = await browserProvider.getSigner()
             const account = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80').connect(browserProvider)
 
-            const rocketlend = new ethers.Contract('0xf5c4a909455C00B99A90d93b48736F3196DB5621',
+            const rocketlend = new ethers.Contract('0x0c626FC4A447b01554518550e30600136864640B',
                 ['function registerLender() returns (uint256)', 'event RegisterLender (uint256 indexed id, address indexed who)'], signer)
 
             const tx = await rocketlend.registerLender()
@@ -391,7 +499,7 @@ const Lender: NextPage = () => {
 
 
     const handleInterestEarned = () => {
-        const newInterestEarned = (BigInt(sliderValue2 * 86400000) * BigInt(sliderValue3) * BigInt(sliderValue))/ ethers.parseUnits("1", "wei")
+        const newInterestEarned = (BigInt(sliderValue2 * 86400000) * BigInt(sliderValue3) * BigInt(sliderValue)) / ethers.parseUnits("1", "wei")
         console.log(newInterestEarned)
         setInterestEarned(newInterestEarned)
     }
@@ -476,6 +584,8 @@ const Lender: NextPage = () => {
                             <div className="w-auto h-auto rounded-[20px] shadow-lg p-[20px]  gap-4 bg-[#fff] flex flex-col items-center justify-center ">
                                 <h2 className="text-2xl font-bold mb-3 max-w-[80%] text-center">Create a Lending Pool</h2>
 
+                                <span>Current Protocol Fee: {(currentProtocol.feeNumerator).toString()}</span>
+
                                 <label className='flex flex-col items-center justify-center'>
                                     <span className='mb-1 text-lg text-gray-400'>RPL for lending:</span>
                                     <input value={RPLToLend} onChange={handleRPLToLend} className="border border-black-200 shadow-lg text-black-500" type="text" />
@@ -499,7 +609,7 @@ const Lender: NextPage = () => {
                                         onChange={handleChange}
                                     />
                                 </label>
-                             
+
 
 
 
