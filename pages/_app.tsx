@@ -14,6 +14,8 @@ import {
 
 } from 'wagmi/chains';
 
+import {Providers} from "../globalredux/provider"
+
 
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
@@ -30,7 +32,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
   [ 
   jsonRpcProvider({
     rpc: () => ({
-      http: `http://127.0.0.1:59531`,
+      http: `http://127.0.0.1:56767`,
     }),
   })
    ]
@@ -56,7 +58,7 @@ const client = new QueryClient();
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-   
+    <Providers>
     <WagmiConfig config={wagmiConfig}>
       <RainbowKitProvider 
       chains={chains}
@@ -68,6 +70,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   
       </RainbowKitProvider>
     </WagmiConfig>
+    </Providers>
   
   );
 }

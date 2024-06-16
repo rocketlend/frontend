@@ -138,6 +138,24 @@
 }
 
 
+.modal {
+  opacity: 0;
+  transform: translate(-50%, 10%);
+  transition: 0.25s all ease-in-out;
+}
+
+.modalOpen {
+  opacity: 1;
+
+  transform: translate(-50%, -50%);
+}
+
+.modalClosed {
+  opacity: 0;
+
+  transform: translate(-50%, 10%) ;
+}
+
 
 .walletContainer {
   background-color: #fff;

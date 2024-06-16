@@ -7,12 +7,16 @@ import Image from 'next/image';
 import PoolList from '../components/poolList';
 import { MdNoAccounts } from "react-icons/md";
 import { useAccount, useChainId } from 'wagmi';
-import { Signature, ethers } from 'ethers';
+import { EventLog, Signature, ethers, Log} from 'ethers';
 import rocketlendABI from "../json/rocketlendABI.json"
 import { useEffect, useState } from 'react';
 import SliderComponent from '../components/slider';
 import storageABI from "../json/storageABI.json"
 import tokenABI from "../json/tokenABI.json"
+import type { RootState } from '../globalredux/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { getPoolData } from "../globalredux/Features/pools/poolsDataSlice"
+import Footer from '../components/footer';
 
 
 const Lender: NextPage = () => {
@@ -36,7 +40,11 @@ const Lender: NextPage = () => {
 
     })
 
-    const currentRocketlendAddress = "0x0c626FC4A447b01554518550e30600136864640B";
+
+
+    const dispatch = useDispatch()
+
+    const currentRocketlendAddress = "0x2A590C461Db46bca129E8dBe5C3998A8fF402e76";
 
 
     const logTemplate = [{
@@ -60,6 +68,7 @@ const Lender: NextPage = () => {
 
 
 
+    const inter = new ethers.Interface(rocketlendABI);
 
 
     const [registrationChecked, setRegistrationChecked] = useState(false)
@@ -73,6 +82,138 @@ const Lender: NextPage = () => {
         console.log(registrationChecked + " and " + lenderId)
 
     }, [lenderId])
+
+
+    type poolObject = {
+
+        balance: string
+        allowance: string
+        attoRPL: string
+        blockNumber: number
+        lender: string
+        poolID: string
+        endTime: string
+
+
+    }
+
+
+
+
+
+
+    const getPoolLogs = async () => {
+
+        try {
+
+            console.log("Running get Registration logs")
+            let browserProvider = new ethers.BrowserProvider((window as any).ethereum)
+
+
+            let signer = await browserProvider.getSigner()
+
+
+
+            const rocketlendContract = new ethers.Contract(currentRocketlendAddress, rocketlendABI, signer);
+            const latestBlockNum = await browserProvider.getBlockNumber();
+
+
+
+
+            const data: Array<any> = await rocketlendContract.queryFilter("CreatePool", latestBlockNum - 10000, latestBlockNum)
+
+            console.log(data[0])
+
+            let poolObjectsArray: Array<poolObject> = [];
+
+
+            for (const pool of data) {
+
+
+                console.log(pool)
+
+
+                let newBalance = "";
+                let newAllowance = "";
+                let newAttoRPL = "";
+                let newBlockNumber = 0
+                let newLender = "0x"
+                let newEndTime = pool.args[1][2].toString()
+
+                let newPoolID = pool.args[0]
+
+
+
+
+                const tx = await browserProvider.getTransaction(pool.transactionHash);
+
+                console.log(tx)
+
+
+                console.log(tx)
+
+
+
+                if (tx !== null) {
+
+
+
+
+                    const decodedInput = inter.parseTransaction({ data: tx.data, value: tx.value });
+                    console.log(decodedInput)
+
+                    newBlockNumber = tx.blockNumber !== null ? tx.blockNumber : 0
+                    newLender = tx.from !== null ? tx.from : "";
+
+
+                    if (decodedInput !== null) {
+                        newBalance = ethers.formatEther(decodedInput.args[1])
+                        newAllowance = ethers.formatEther(decodedInput.args[2])
+                        newAttoRPL = ethers.formatEther(decodedInput.args[0][1])
+
+                    }
+
+
+
+
+
+
+                }
+
+
+
+                let newPoolObject = { balance: newBalance, allowance: newAllowance, attoRPL: newAttoRPL, blockNumber: newBlockNumber, lender: newLender, poolID: newPoolID, endTime: newEndTime }
+
+
+
+                poolObjectsArray.push(newPoolObject)
+
+
+            }
+
+
+      
+            dispatch(getPoolData(poolObjectsArray))
+
+
+            
+
+
+
+
+
+
+
+
+
+
+
+        } catch (e: any) {
+
+            console.log(e)
+        }
+    }
+
 
 
 
@@ -98,7 +239,7 @@ const Lender: NextPage = () => {
 
             console.log(latestBlockNum - 10000)
 
-            const data = await rocketlendContract.queryFilter("RegisterLender", latestBlockNum - 10000, latestBlockNum)
+            const data: Array<any> = await rocketlendContract.queryFilter("RegisterLender", latestBlockNum - 10000, latestBlockNum)
 
             console.log(data)
 
@@ -106,7 +247,7 @@ const Lender: NextPage = () => {
             if (data.length > 0) {
 
 
-                setRegistrationChecked(true)
+
 
 
                 const realReceipt = await browserProvider.getTransactionReceipt(data[0].transactionHash)
@@ -114,10 +255,40 @@ const Lender: NextPage = () => {
 
                 const logsFromReceipt = realReceipt !== null ? realReceipt.logs.map((log: any) => rocketlendContract.interface.parseLog(log)) : []
 
-                if (logsFromReceipt[0] !== null) {
-                    console.log(logsFromReceipt[0].args[0])
-                    setLenderId(logsFromReceipt[0].args[0])
+                if (data !== null) {
 
+
+
+
+
+
+
+
+
+                    for (const log of data) {
+
+                        if (log !== null ) {
+                            console.log("Running 1")
+                            console.log(log.args[1])
+
+                            if (log.args[1] === address) {
+
+                                console.log("Running 2")
+
+
+                                setRegistrationChecked(true)
+                                setLenderId(log.args[0])
+
+
+                                return;
+
+
+                            }
+
+                        }
+
+
+                    }
 
                 }
 
@@ -152,10 +323,18 @@ const Lender: NextPage = () => {
 
 
 
+  
+
+
+
+
+
+
 
     useEffect(() => {
 
         getRegistrationLog();
+
 
     }, [])
 
@@ -180,51 +359,23 @@ const Lender: NextPage = () => {
     const storageAddress = currentChain === 17000 ? "0x594Fb75D3dc2DFa0150Ad03F99F97817747dd4E1" : "0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46"
 
 
-    type protocol =  {
+    type protocol = {
         fees: number
-feeNumerator: number
-address: string
-pending: string
+        feeNumerator: number
+        address: string
+        pending: string
     }
 
-    const [currentProtocol, setCurrentProtocol] = useState<protocol>({fees: 0,
+    const [currentProtocol, setCurrentProtocol] = useState<protocol>({
+        fees: 0,
         feeNumerator: 0,
         address: "admin (that can claim protocol fees and change the rate)",
-        pending:""})
+        pending: ""
+    })
 
 
 
 
-
-
-    const callProtocol = async () => {
-
-        try {
-            let browserProvider = new ethers.BrowserProvider((window as any).ethereum)
-
-
-            let signer = await browserProvider.getSigner()
-
-
-
-            const rocketlendContract = new ethers.Contract(currentRocketlendAddress, rocketlendABI, signer);
-
-
-            const data = await rocketlendContract.protocol()
-
-
-
-            setCurrentProtocol(data)
-
-
-
-        } catch (e) {
-
-        }
-
-
-
-    }
 
 
     useEffect(() => {
@@ -301,7 +452,7 @@ pending: string
         console.log("PROTOCOL FEE " + currentProtocol.feeNumerator)
 
         console.log("RPL" + ethers.parseEther(RPLToLend))
-        
+
         console.log("ALLOWANCE" + ethers.parseEther(poolAllowance.toString()))
 
 
@@ -370,6 +521,8 @@ pending: string
                 const receipt = await tx.wait();
 
                 if (receipt.status === 1) {
+
+                   const data = await getPoolLogs();
                     alert("Sucessfully created a Pool")
 
                 }
@@ -411,7 +564,7 @@ pending: string
             let signer = await browserProvider.getSigner()
             const account = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80').connect(browserProvider)
 
-            const rocketlend = new ethers.Contract('0x0c626FC4A447b01554518550e30600136864640B',
+            const rocketlend = new ethers.Contract(currentRocketlendAddress,
                 ['function registerLender() returns (uint256)', 'event RegisterLender (uint256 indexed id, address indexed who)'], signer)
 
             const tx = await rocketlend.registerLender()
@@ -541,7 +694,7 @@ pending: string
 
 
     return (
-        <div style={{ backgroundColor: "#eeeff2" }} className="">
+        <div style={{ backgroundColor: "#eeeff2" }} >
             <Head>
                 <title>Rocketlend</title>
                 <meta
@@ -558,15 +711,16 @@ pending: string
 
             {address !== undefined ? (
 
-                <div className="md:min-h-[92vh]  h-auto  flex flex-col items-center justify-center ">
+                <div className="min-h-[92vh]  h-auto  flex flex-col items-center justify-center ">
 
                     {registrationChecked ? (
 
-                        <div className="w-full h-auto flex  items-center justify-center gap-10 mt-[0vh] lg:mt-[7vh]">
+                        <div className="w-full h-auto flex lg:flex-row flex-col  items-center justify-center gap-10 mt-[0vh] mt-[7vh]">
 
                             <div className="w-auto h-auto rounded-[20px] shadow-lg p-[20px]  gap-2 bg-[#fff] flex flex-col items-center justify-center ">
 
                                 <h2 className="text-2xl font-bold mb-3 max-w-[80%] text-center">Interest Earned Calculator</h2>
+                                <p className='text-center max-w-[80%]'>Estimate your interest rewards based on the values entered into the Create Pool form</p>
                                 <SliderComponent min={0} max={Number(RPLToLend)} onChange={setSliderValue} />
                                 <p>RPL borrowed: {sliderValue}</p>
                                 <SliderComponent min={0} max={days} onChange={setSliderValue2} />
@@ -634,7 +788,7 @@ pending: string
 
                         (
 
-                            <div className="flex flex-col items-center justify-center gap-2 mt-[0vh] lg:mt-[7vh]">
+                            <div className=" min-h-[92vh] flex flex-col items-center justify-center gap-2 mt-[0vh] lg:mt-[7vh]">
 
 
 
@@ -678,7 +832,7 @@ pending: string
 
                 (
 
-                    <div className="h-[92vh]  flex flex-col items-center justify-center ">
+                    <div className="min-h-[92vh] h-auto  flex flex-col items-center justify-center ">
 
                         <div className="flex flex-col items-center justify-center gap-2 mt-[0vh] lg:mt-[7vh]">
 
@@ -794,7 +948,9 @@ pending: string
 
 
 
+<PoolList/>
 
+<Footer/>
 
         </div>
     );

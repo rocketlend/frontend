@@ -7,6 +7,7 @@ import Image from 'next/image';
 import PoolList from '../components/poolList';
 import Link
   from 'next/link';
+import Footer from '../components/footer';
 
 const Home: NextPage = () => {
   return (
@@ -42,7 +43,9 @@ const Home: NextPage = () => {
 
           <div className="flex items-center justify-center gap-3 mb-[0vh] lg:mb-[6vh]">
 
-            <button className={styles.uniButton}>Borrowing</button>
+            <Link href="/borrower" >
+              <button className={styles.uniButton}>Borrowing</button>
+            </Link>
 
             <Link href="/lender" >
               <button className={styles.uniButton}>Lending</button>
@@ -60,7 +63,7 @@ const Home: NextPage = () => {
 
 
 
-
+      <Footer />
     </div>
   );
 };
