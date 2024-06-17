@@ -44,7 +44,7 @@ const Lender: NextPage = () => {
 
     const dispatch = useDispatch()
 
-    const currentRocketlendAddress = "0x2A590C461Db46bca129E8dBe5C3998A8fF402e76";
+    const currentRocketlendAddress = "0x2F54D1563963fC04770E85AF819c89Dc807f6a06";
 
 
     const logTemplate = [{

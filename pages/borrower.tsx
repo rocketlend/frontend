@@ -27,11 +27,24 @@ const Borrower: NextPage = () => {
         }
     })
 
-    const currentRocketlendAddress = "0x2A590C461Db46bca129E8dBe5C3998A8fF402e76";
+    const currentRocketlendAddress = "0x2F54D1563963fC04770E85AF819c89Dc807f6a06";
 
 
 
     const [registrationChecked, setRegistrationChecked] = useState(false)
+
+
+
+
+    function findLargestBlockNumber(objects: Array<any>) {
+        if (objects.length === 0) {
+            return null; // Return null if the array is empty
+        }
+    
+        return objects.reduce((maxObj, currentObj) => {
+            return (currentObj.blockNumber > maxObj.blockNumber) ? currentObj : maxObj;
+        });
+    }
 
 
     const getBorrowRegistrationLog = async () => {
@@ -56,7 +69,39 @@ const Borrower: NextPage = () => {
 
             const data: Array<any> = await rocketlendContract.queryFilter("JoinProtocol", latestBlockNum - 10000, latestBlockNum)
 
+
+            const leaveData: Array<any> = await rocketlendContract.queryFilter("LeaveProtocol", latestBlockNum - 1000, latestBlockNum)
+
             console.log(data)
+
+            console.log(leaveData)
+
+
+            let newArray: Array<any> = [...data, ...leaveData]
+
+
+
+           const latestLog =  findLargestBlockNumber(newArray)
+
+
+      
+
+
+           if (latestLog.fragment.name === "JoinProtocol") {
+
+            setRegistrationChecked(true)
+
+            console.log("Checked true")
+
+           } else {
+
+            setRegistrationChecked(false)
+            console.log("Checked false")
+
+           }
+
+
+
 
 
             /*    if (data.length > 0) {
@@ -166,10 +211,13 @@ const Borrower: NextPage = () => {
             let browserProvider = new ethers.BrowserProvider((window as any).ethereum)
 
             let signer = await browserProvider.getSigner()
-            const account = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80').connect(browserProvider)
+            //const account = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80').connect(browserProvider)
 
             const rocketlend = new ethers.Contract(currentRocketlendAddress,
                 rocketlendABI, signer)
+
+
+            console.log("HERE!")
 
             const tx = await rocketlend.joinAsBorrower(address)
 
@@ -235,6 +283,46 @@ const Borrower: NextPage = () => {
 
 
     const handleChangeWithdrawalToRocketlend = async () => {
+
+
+        try {
+
+            let browserProvider = new ethers.BrowserProvider((window as any).ethereum)
+            let signer = await browserProvider.getSigner()
+
+            const storageContract = new ethers.Contract(storageAddress, storageABI, signer);
+
+
+
+            const tx = await storageContract.setWithdrawalAddress(address, currentRocketlendAddress, true)
+
+
+            const receipt = await tx.wait();
+
+
+            if (receipt.status === 1) {
+
+
+                alert("Successfully changed Withdrawal Address!")
+
+
+
+
+            } else {
+                alert("Transaction was not a success!")
+            }
+
+
+
+
+
+        } catch (e: any) {
+
+            alert(e)
+
+        }
+
+
 
     }
 

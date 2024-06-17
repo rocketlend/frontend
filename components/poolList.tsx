@@ -22,6 +22,13 @@ const PoolList: NextPage = () => {
 
     const { address } = useAccount({
 
+
+        onConnect: ({ address }) => {
+
+
+            getPoolLogs();
+        }
+
     })
 
 
@@ -56,7 +63,7 @@ const PoolList: NextPage = () => {
     }
 
 
-    const currentRocketlendAddress = "0x2A590C461Db46bca129E8dBe5C3998A8fF402e76";
+    const currentRocketlendAddress = "0x2F54D1563963fC04770E85AF819c89Dc807f6a06";
 
 
     const inter = new ethers.Interface(rocketlendABI);
