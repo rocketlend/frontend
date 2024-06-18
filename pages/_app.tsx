@@ -32,7 +32,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
   [ 
   jsonRpcProvider({
     rpc: () => ({
-      http: `http://127.0.0.1:60440`,
+      http: `http://127.0.0.1:59602`,
     }),
   })
    ]

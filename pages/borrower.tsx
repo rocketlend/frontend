@@ -27,7 +27,7 @@ const Borrower: NextPage = () => {
         }
     })
 
-    const currentRocketlendAddress = "0x2F54D1563963fC04770E85AF819c89Dc807f6a06";
+    const currentRocketlendAddress = "0x325c8Df4CFb5B068675AFF8f62aA668D1dEc3C4B";
 
 
 
@@ -189,6 +189,30 @@ const Borrower: NextPage = () => {
 
 
 
+
+
+    const fastForwardTime = async () => {
+
+        try {
+
+
+            let browserProvider = new ethers.BrowserProvider((window as any).ethereum)
+
+
+
+            await browserProvider.send("evm_increaseTime", [3600])
+
+
+            alert("Time increased")
+
+        } catch (e: any) {
+
+
+            console.log(e)
+            alert(e)
+
+        }
+    }
 
 
 
@@ -728,6 +752,9 @@ const Borrower: NextPage = () => {
                 )}
 
             <PoolList />
+
+
+
 
 
 
