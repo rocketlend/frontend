@@ -6,10 +6,10 @@ import {
 
 export const config = getDefaultConfig({
   appName: 'RocketLend',
-  projectId: 'ROCKETLEND_PROJECT_ID',
+  projectId: '72d96e7ff3f184256a7677239be021a6',
   chains: [
     mainnet,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [holesky] : []),
+    holesky,
   ],
   ssr: true,
 });
