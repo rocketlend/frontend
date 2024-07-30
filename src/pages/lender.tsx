@@ -20,7 +20,7 @@ const Page: NextPage = ({constants}) => {
         <h2>Your RPL Balance</h2>
         <p>Connected account: {connectedAccount} (status: {status})</p>
         {status === 'connected' ?
-         <p>{formatEther(rplBalance)} RPL wei (error: {rplBalanceError?.message || 'no error'}, status: {fetchStatus})</p> :
+         <p>{typeof rplBalance == 'bigint' && formatEther(rplBalance)} RPL (error: {rplBalanceError?.message || 'no error'}, status: {fetchStatus})</p> :
          <p>Not fetching RPL balance because connection status is {status}</p>
         }
       </section>
