@@ -1,5 +1,6 @@
 import type { NextPage } from 'next';
 import { useChainId, useReadContract, useAccount } from 'wagmi';
+import { formatEther } from 'viem';
 import { chainNameFromId, useRocketAddress, rplABI } from '../wagmi';
 
 const Page: NextPage = ({constants}) => {
@@ -18,8 +19,10 @@ const Page: NextPage = ({constants}) => {
       <section>
         <h2>Your RPL Balance</h2>
         <p>Connected account: {connectedAccount} (status: {status})</p>
-        {status === 'connected' &&
-         <p>{rplBalance} RPL wei (error: {rplBalanceError?.message}, status: {fetchStatus})</p>}
+        {status === 'connected' ?
+         <p>{formatEther(rplBalance)} RPL wei (error: {rplBalanceError?.message || 'no error'}, status: {fetchStatus})</p> :
+         <p>Not fetching RPL balance because connection status is {status}</p>
+        }
       </section>
       <section>
         <h2>Your Lending Pools</h2>
