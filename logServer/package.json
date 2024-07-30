@@ -1,0 +1,11 @@
+{
+  "name": "rocketlend-logserver",
+  "type": "module",
+  "version": "0.1.0",
+  "dependencies": {
+    "cors": "2",
+    "@dotenvx/dotenvx": "1",
+    "ethers": "6",
+    "express": "4"
+  }
+}
