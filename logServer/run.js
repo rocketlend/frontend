@@ -38,9 +38,9 @@ const updateLenderIdByAddress = async (toBlock) => {
       const address = log.args[log.eventName == 'RegisterLender' ? 'address' : 'new']
       const key = address.toLowerCase()
       const lenderId = log.args.id
-      const {blockNumber, logIndex} = lenderIdByAddress.data[key]
+      const {blockNumber, logIndex} = lenderIdByAddress.data[key] || {}
       if ((blockNumber || 0) < log.blockNumber || blockNumber == log.blockNumber && logIndex < log.index) {
-        cnosole.log(`Updating lenderId to ${lenderId} for ${address}`)
+        console.log(`Updating lenderId to ${lenderId} for ${address}`)
         lenderIdByAddress.data[key] = {
           blockNumber: log.blockNumber,
           logIndex: log.index,
