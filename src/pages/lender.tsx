@@ -1,8 +1,9 @@
 import type { NextPage } from 'next';
 import { useState, useEffect } from 'react';
-import { useChainId, useReadContract, useAccount } from 'wagmi';
+import { useChainId, useReadContract, useWriteContract, useAccount } from 'wagmi';
 import { formatEther } from 'viem';
 import { chainNameFromId, useRocketAddress, rocketLendABI, rplABI } from '../wagmi';
+import IfConnected from '../components/ifConnected';
 
 const useLenderId = ({address, chainName, constants}) => {
   const [lenderId, setLenderId] = useState(null);
@@ -16,9 +17,8 @@ const useLenderId = ({address, chainName, constants}) => {
   return lenderId;
 };
 
-const RPLBalance = ({chainName}) => {
+const RPLBalance = ({accountAddress, chainName}) => {
   const {data: rplAddress} = useRocketAddress({chainName, contractName: 'rocketTokenRPL'});
-  const {address: accountAddress, status: accountStatus} = useAccount();
   const {data: rplBalance, error: rplBalanceError, fetchStatus} = useReadContract({
     abi: rplABI,
     address: rplAddress,
@@ -26,21 +26,29 @@ const RPLBalance = ({chainName}) => {
     args: [accountAddress]
   });
   return (
-    <section>
-      <h2>Your RPL Balance</h2>
-      <p>Connected account: {accountAddress} (status: {accountStatus})</p>
-      {accountStatus === 'connected' ?
-        <p>{typeof rplBalance == 'bigint' && formatEther(rplBalance)} RPL (error: {rplBalanceError?.message || 'no error'}, status: {fetchStatus})</p> :
-        <p>Not fetching RPL balance because connection status is {accountStatus}</p>
-      }
-    </section>
+    <p>Balance:
+      {typeof rplBalance == 'bigint' ? ` ${formatEther(rplBalance)} RPL` : ` Error: ${rplBalanceError}`}
+    </p>
   );
 };
 
-const RegisterLenderForm = () => {
+const RegisterLenderForm = ({chainName, constants}) => {
+  const {writeContract} = useWriteContract();
+  const handleRegister = (e) => {
+    const address = constants[chainName].rocketlend;
+    const result = writeContract({
+      address,
+      abi: rocketLendABI,
+      functionName: 'registerLender',
+    });
+  };
   return (
     <section>
-    <h2>Not Registered Yet</h2>
+    <h2>Register as a Rocket Lend Lender</h2>
+    <button
+      onClick={handleRegister}
+      className="border"
+    >Register</button>
     </section>
   );
 };
@@ -53,6 +61,10 @@ const LenderOverview = ({lenderId}) => {
         <p>TODO only show this if there are existing pools for this lender</p>
       </section>
       <CreateLendingPoolForm />
+      <section>
+        <h2>Transfer Lender Id</h2>
+        <p>TODO form to transfer id to another address</p>
+      </section>
     </>
   );
 };
@@ -67,15 +79,15 @@ const CreateLendingPoolForm = () => {
 
 const Page: NextPage = ({constants}) => {
   const chainName = chainNameFromId(useChainId());
-  const {address} = useAccount();
+  const {address, status} = useAccount();
   const lenderId = useLenderId({chainName, address, constants});
   return (
-    <>
-      <RPLBalance chainName={chainName} />
+    <IfConnected accountStatus={status}>
+      <RPLBalance accountAddress={address} chainName={chainName} />
       { typeof lenderId == 'bigint' ?
         <LenderOverview lenderId={lenderId} /> :
-        <RegisterLenderForm /> }
-    </>
+        <RegisterLenderForm chainName={chainName} constants={constants} /> }
+    </IfConnected>
   );
 };
 
