@@ -36,11 +36,12 @@ const updateLenderIdByAddress = async (toBlock) => {
     )
     for (const log of logs) {
       const address = log.args[log.eventName == 'RegisterLender' ? 'address' : 'new']
+      const key = address.toLowerCase()
       const lenderId = log.args.id
-      const {blockNumber, logIndex} = lenderIdByAddress.data[address]
+      const {blockNumber, logIndex} = lenderIdByAddress.data[key]
       if ((blockNumber || 0) < log.blockNumber || blockNumber == log.blockNumber && logIndex < log.index) {
         cnosole.log(`Updating lenderId to ${lenderId} for ${address}`)
-        lenderIdByAddress.data[address] = {
+        lenderIdByAddress.data[key] = {
           blockNumber: log.blockNumber,
           logIndex: log.index,
           lenderId
@@ -58,4 +59,22 @@ provider.on('block', async (blockNumber) => {
   await updateLenderIdByAddress(blockNumber)
 })
 
+const addressRe = '0x[0-9a-fA-F]{40}'
+
 const app = express()
+
+app.use(cors())
+
+app.get(`/lenderId/:address(${addressRe})`, async (req, res, next) => {
+  try {
+    const address = req.params.address.toLowerCase()
+    const {lenderId} = lenderIdByAddress.data[address] || {}
+    if (typeof lenderId == 'bigint')
+      return res.status(200).json(lenderId.toString())
+    else
+      return res.status(404).end()
+  }
+  catch (e) { next(e) }
+})
+
+app.listen(port)
