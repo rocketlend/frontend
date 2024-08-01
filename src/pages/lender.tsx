@@ -7,14 +7,19 @@ import IfConnected from '../components/ifConnected';
 
 const useLenderId = ({address, chainName, constants}) => {
   const [lenderId, setLenderId] = useState(null);
+  const [needsRefresh, setNeedsRefresh] = useState(false);
+  const refreshLenderId = () => setNeedsRefresh(true);
   useEffect(() => {
-    const logServerUrl = constants[chainName].logserver
+    if (typeof address != 'string') return;
+    if (!needsRefresh) return;
+    setNeedsRefresh(false);
+    const logServerUrl = constants[chainName].logserver;
     fetch(`${logServerUrl}/lenderId/${address}`).then((res) => {
       if (res.status !== 200) setLenderId(null)
       else res.json().then(id => setLenderId(BigInt(id)))
-    }).catch(e => console.error(`Error fetching lender id ${e.message}`))
-  }, [address, chainName, constants]);
-  return lenderId;
+    }).catch(e => console.error(`Error fetching lender id ${e.message}`));
+  }, [address, chainName, constants, needsRefresh]);
+  return {lenderId, refreshLenderId};
 };
 
 const RPLBalance = ({accountAddress, chainName}) => {
@@ -32,7 +37,7 @@ const RPLBalance = ({accountAddress, chainName}) => {
   );
 };
 
-const RegisterLenderForm = ({chainName, constants}) => {
+const RegisterLenderForm = ({chainName, constants, refreshLenderId}) => {
   const {writeContract} = useWriteContract();
   const handleRegister = (e) => {
     const address = constants[chainName].rocketlend;
@@ -41,6 +46,9 @@ const RegisterLenderForm = ({chainName, constants}) => {
       abi: rocketLendABI,
       functionName: 'registerLender',
     });
+    // TODO: show pending state in UI
+    // TODO: update UI state on success
+    // TODO: refreshLenderId on success
   };
   return (
     <section>
@@ -80,13 +88,17 @@ const CreateLendingPoolForm = () => {
 const Page: NextPage = ({constants}) => {
   const chainName = chainNameFromId(useChainId());
   const {address, status} = useAccount();
-  const lenderId = useLenderId({chainName, address, constants});
+  const {lenderId, refreshLenderId} = useLenderId({chainName, address, constants});
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address} chainName={chainName} />
       { typeof lenderId == 'bigint' ?
         <LenderOverview lenderId={lenderId} /> :
-        <RegisterLenderForm chainName={chainName} constants={constants} /> }
+        <RegisterLenderForm
+           refreshLenderId={refreshLenderId}
+           chainName={chainName}
+           constants={constants}
+        /> }
     </IfConnected>
   );
 };
