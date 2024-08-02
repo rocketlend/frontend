@@ -1,38 +1,41 @@
 import type { NextPage } from 'next';
 import { useState, useEffect } from 'react';
-import { useChainId, useReadContract, useWriteContract, useAccount } from 'wagmi';
+import { useChainId, useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
 import { formatEther } from 'viem';
 import { chainNameFromId, useRocketAddress, rocketLendABI, rplABI } from '../wagmi';
 import IfConnected from '../components/ifConnected';
 
-const SUCCESS_DELAY = 2000;
-
 const TransactionButton = ({buttonText, address, abi, functionName, args}) => {
-  const {writeContract, error, status, isError, isIdle, isPending, isSuccess} = useWriteContract();
-  const onError = ({error}) => {
-    console.log(`Got an error: ${error.message}`);
-  };
-  const onSuccess = ({data}) => {
-    console.log(`Got success`);
-  };
-  const onSettled = () => {
-    console.log(`Got settled`);
-  };
+  const {
+    writeContract,
+    data: hash,
+    error: errorOnWrite,
+    isPending,
+    isSuccess: writeSuccess,
+  } = useWriteContract();
+  const {
+    data: receipt,
+    error: errorOnWait,
+    isLoading,
+    isSuccess: isConfirmed
+  } = useWaitForTransactionReceipt({hash, query: {enabled: writeSuccess}});
   const handler = () => {
-    writeContract(
-      { address, abi, functionName, args },
-      { onError, onSuccess, onSettled }
-    );
+    writeContract({ address, abi, functionName, args });
   };
+  // TODO: make the status messages disappear eventually?
   return (
+    <>
     <button
       className="border"
-      disabled={isPending}
+      disabled={isPending || (writeSuccess && !(errorOnWait || isConfirmed))}
       onClick={handler}
-    >{buttonText} ({status})
-     {isSuccess && ' Done!'}
-     {isError && ` Error: ${error.message}`}
-    </button>
+    >{buttonText}</button>
+    {hash && !receipt && <p>Submitted transaction with hash {hash}</p>}
+    {receipt && receipt.status == 'success' && <p>{hash} confirmed</p>}
+    {receipt && isConfirmed && receipt.status != 'success' && <p>{hash} {receipt.status}</p>}
+    {errorOnWrite && <p>Error sending transaction: {errorOnWrite.message}</p>}
+    {errorOnWait && <p>Error waiting for transaction confirmation: {errorOnWait.message}</p>}
+    </>
   );
 };
 
@@ -70,7 +73,6 @@ const RPLBalance = ({accountAddress, chainName}) => {
 };
 
 const RegisterLenderForm = ({chainName, constants, refreshLenderId}) => {
-  const {writeContract} = useWriteContract();
   const address = constants[chainName].rocketlend;
   // TODO: refreshLenderId on success
   return (
