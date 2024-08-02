@@ -5,6 +5,38 @@ import { formatEther } from 'viem';
 import { chainNameFromId, useRocketAddress, rocketLendABI, rplABI } from '../wagmi';
 import IfConnected from '../components/ifConnected';
 
+const SUCCESS_DELAY = 2000;
+
+const TransactionButton = ({buttonText, address, abi, functionName, args}) => {
+  const {writeContract, error, status, isError, isIdle, isPending, isSuccess} = useWriteContract();
+  const onError = ({error}) => {
+    console.log(`Got an error: ${error.message}`);
+  };
+  const onSuccess = ({data}) => {
+    console.log(`Got success`);
+  };
+  const onSettled = () => {
+    console.log(`Got settled`);
+  };
+  const handler = () => {
+    writeContract(
+      { address, abi, functionName, args },
+      { onError, onSuccess, onSettled }
+    );
+  };
+  return (
+    <button
+      className="border"
+      disabled={isPending}
+      onClick={handler}
+    >{buttonText} ({status})
+     {isSuccess && ' Done!'}
+     {isError && ` Error: ${error.message}`}
+    </button>
+  );
+};
+
+
 const useLenderId = ({address, chainName, constants}) => {
   const [lenderId, setLenderId] = useState(null);
   const [needsRefresh, setNeedsRefresh] = useState(false);
@@ -39,24 +71,17 @@ const RPLBalance = ({accountAddress, chainName}) => {
 
 const RegisterLenderForm = ({chainName, constants, refreshLenderId}) => {
   const {writeContract} = useWriteContract();
-  const handleRegister = (e) => {
-    const address = constants[chainName].rocketlend;
-    const result = writeContract({
-      address,
-      abi: rocketLendABI,
-      functionName: 'registerLender',
-    });
-    // TODO: show pending state in UI
-    // TODO: update UI state on success
-    // TODO: refreshLenderId on success
-  };
+  const address = constants[chainName].rocketlend;
+  // TODO: refreshLenderId on success
   return (
     <section>
     <h2>Register as a Rocket Lend Lender</h2>
-    <button
-      onClick={handleRegister}
-      className="border"
-    >Register</button>
+    <TransactionButton
+     buttonText="Register"
+     address={address}
+     abi={rocketLendABI}
+     functionName="registerLender"
+    />
     </section>
   );
 };
