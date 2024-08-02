@@ -5,7 +5,7 @@ import { formatEther } from 'viem';
 import { chainNameFromId, useRocketAddress, rocketLendABI, rplABI } from '../wagmi';
 import IfConnected from '../components/ifConnected';
 
-const TransactionButton = ({buttonText, address, abi, functionName, args}) => {
+const TransactionButton = ({buttonText, address, abi, functionName, args, onSuccess}) => {
   const {
     writeContract,
     data: hash,
@@ -22,23 +22,25 @@ const TransactionButton = ({buttonText, address, abi, functionName, args}) => {
   const handler = () => {
     writeContract({ address, abi, functionName, args });
   };
+  useEffect(() => {
+    if (isConfirmed) onSuccess(receipt);
+  }, [isConfirmed, receipt]);
   // TODO: make the status messages disappear eventually?
   return (
-    <>
-    <button
-      className="border"
-      disabled={isPending || (writeSuccess && !(errorOnWait || isConfirmed))}
-      onClick={handler}
-    >{buttonText}</button>
-    {hash && !receipt && <p>Submitted transaction with hash {hash}</p>}
-    {receipt && receipt.status == 'success' && <p>{hash} confirmed</p>}
-    {receipt && isConfirmed && receipt.status != 'success' && <p>{hash} {receipt.status}</p>}
-    {errorOnWrite && <p>Error sending transaction: {errorOnWrite.message}</p>}
-    {errorOnWait && <p>Error waiting for transaction confirmation: {errorOnWait.message}</p>}
-    </>
+    <div>
+      <button
+        className="border"
+        disabled={isPending || (writeSuccess && !(errorOnWait || isConfirmed))}
+        onClick={handler}
+      >{buttonText}</button>
+      {hash && !receipt && <p>Submitted transaction with hash {hash}</p>}
+      {receipt && receipt.status == 'success' && <p>{hash} confirmed</p>}
+      {receipt && isConfirmed && receipt.status != 'success' && <p>{hash} {receipt.status}</p>}
+      {errorOnWrite && <p>Error sending transaction: {errorOnWrite.message}</p>}
+      {errorOnWait && <p>Error waiting for transaction confirmation: {errorOnWait.message}</p>}
+    </div>
   );
 };
-
 
 const useLenderId = ({address, chainName, constants}) => {
   const [lenderId, setLenderId] = useState(null);
@@ -74,7 +76,6 @@ const RPLBalance = ({accountAddress, chainName}) => {
 
 const RegisterLenderForm = ({chainName, constants, refreshLenderId}) => {
   const address = constants[chainName].rocketlend;
-  // TODO: refreshLenderId on success
   return (
     <section>
     <h2>Register as a Rocket Lend Lender</h2>
@@ -83,6 +84,7 @@ const RegisterLenderForm = ({chainName, constants, refreshLenderId}) => {
      address={address}
      abi={rocketLendABI}
      functionName="registerLender"
+     onSuccess={refreshLenderId}
     />
     </section>
   );
@@ -98,6 +100,7 @@ const LenderOverview = ({lenderId}) => {
       <CreateLendingPoolForm />
       <section>
         <h2>Transfer Lender Id</h2>
+        <p>Current Lender Id: {lenderId.toString()}</p>
         <p>TODO form to transfer id to another address</p>
       </section>
     </>
