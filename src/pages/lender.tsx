@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useChainId, useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
 import { formatEther } from 'viem';
 import { chainNameFromId, useRocketAddress, rocketLendABI, rplABI } from '../wagmi';
-import IfConnected from '../components/ifConnected';
+import IfConnected from '../components/IfConnected';
 
 const TransactionButton = ({buttonText, address, abi, functionName, args, onSuccess}) => {
   const {
