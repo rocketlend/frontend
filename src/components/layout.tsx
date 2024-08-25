@@ -1,6 +1,7 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
+import { FC, ReactNode } from 'react';
 
 function Navbar() {
   return (
@@ -15,7 +16,7 @@ function Navbar() {
   )
 };
 
-export default function Layout({ children }) {
+const Layout: FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <div className={styles.container}>
     <Head>
@@ -38,3 +39,4 @@ export default function Layout({ children }) {
     </div>
   )
 };
+export default Layout;
