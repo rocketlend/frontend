@@ -7,7 +7,7 @@ import { WagmiProvider } from 'wagmi';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import Layout from '../components/layout';
 
-import { config, constants } from '../wagmi';
+import { config } from '../wagmi';
 
 const client = new QueryClient();
 
@@ -17,7 +17,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <QueryClientProvider client={client}>
         <RainbowKitProvider>
           <Layout>
-            <Component {...pageProps} constants={constants} />
+            <Component {...pageProps} />
           </Layout>
         </RainbowKitProvider>
       </QueryClientProvider>

@@ -1,67 +1,23 @@
 import type { NextPage } from 'next';
 import { useState, useEffect } from 'react';
-import { useChainId, useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
 import { formatEther } from 'viem';
-import { chainNameFromId, useRocketAddress, rocketLendABI, rplABI } from '../wagmi';
-import IfConnected from '../components/IfConnected';
+import rocketLendABI from '../rocketlend.abi';
+import rplABI from '../rocketTokenRPL.abi';
+import { serverQueryFn } from '../functions/serverQuery';
+import { useQuery } from '@tanstack/react-query';
+import { TransactionSubmitter } from '../components/TransactionSubmitter';
+import { IfConnected } from '../components/IfConnected';
+import { useLogServerURL } from '../hooks/useLogServerURL';
+import { useRocketAddress } from '../hooks/useRocketAddress';
+import { useRocketLendAddress } from '../hooks/useRocketLendAddress';
 
-const TransactionButton = ({buttonText, address, abi, functionName, args, onSuccess}) => {
-  const {
-    writeContract,
-    data: hash,
-    error: errorOnWrite,
-    isPending,
-    isSuccess: writeSuccess,
-  } = useWriteContract();
-  const {
-    data: receipt,
-    error: errorOnWait,
-    isLoading,
-    isSuccess: isConfirmed
-  } = useWaitForTransactionReceipt({hash, query: {enabled: writeSuccess}});
-  const handler = () => {
-    writeContract({ address, abi, functionName, args });
-  };
-  useEffect(() => {
-    if (isConfirmed) onSuccess(receipt);
-  }, [isConfirmed, receipt]);
-  // TODO: make the status messages disappear eventually?
-  return (
-    <div>
-      <button
-        className="border"
-        disabled={isPending || (writeSuccess && !(errorOnWait || isConfirmed))}
-        onClick={handler}
-      >{buttonText}</button>
-      {hash && !receipt && <p>Submitted transaction with hash {hash}</p>}
-      {receipt && receipt.status == 'success' && <p>{hash} confirmed</p>}
-      {receipt && isConfirmed && receipt.status != 'success' && <p>{hash} {receipt.status}</p>}
-      {errorOnWrite && <p>Error sending transaction: {errorOnWrite.message}</p>}
-      {errorOnWait && <p>Error waiting for transaction confirmation: {errorOnWait.message}</p>}
-    </div>
-  );
-};
+// TODO: add listener to events that calls refreshLenderId on new events
+// TODO: ensure lender id is fetched if necessary on page refresh
 
-const useLenderId = ({address, chainName, constants}) => {
-  const [lenderId, setLenderId] = useState(null);
-  const [needsRefresh, setNeedsRefresh] = useState(false);
-  const refreshLenderId = () => setNeedsRefresh(true);
-  useEffect(() => {
-    if (typeof address != 'string') return;
-    if (!needsRefresh) return;
-    setNeedsRefresh(false);
-    const logServerUrl = constants[chainName].logserver;
-    fetch(`${logServerUrl}/lenderId/${address}`).then((res) => {
-      if (res.status !== 200) setLenderId(null)
-      else res.json().then(id => setLenderId(BigInt(id)))
-    }).catch(e => console.error(`Error fetching lender id ${e.message}`));
-  }, [address, chainName, constants, needsRefresh]);
-  return {lenderId, refreshLenderId};
-};
-
-const RPLBalance = ({accountAddress, chainName}) => {
-  const {data: rplAddress} = useRocketAddress({chainName, contractName: 'rocketTokenRPL'});
-  const {data: rplBalance, error: rplBalanceError, fetchStatus} = useReadContract({
+const RPLBalance = ({accountAddress}) => {
+  const {data: rplAddress, error: rplAddressError, fetchStatus: rplAddressStatus} = useRocketAddress('rocketTokenRPL');
+  const {data: rplBalance, error: rplBalanceError, fetchStatus: rplBalanceStatus} = useReadContract({
     abi: rplABI,
     address: rplAddress,
     functionName: 'balanceOf',
@@ -69,17 +25,17 @@ const RPLBalance = ({accountAddress, chainName}) => {
   });
   return (
     <p>Balance:
-      {typeof rplBalance == 'bigint' ? ` ${formatEther(rplBalance)} RPL` : ` Error: ${rplBalanceError}`}
+      {typeof rplBalance == 'bigint' ? ` ${formatEther(rplBalance)} RPL` : ` Balance Type: ${typeof rplBalance} ${rplAddressStatus} ${rplBalanceStatus}; Address Error: ${rplAddressError}; Balance Error: ${rplBalanceError}`}
     </p>
   );
 };
 
-const RegisterLenderForm = ({chainName, constants, refreshLenderId}) => {
-  const address = constants[chainName].rocketlend;
+const RegisterLenderForm = ({refreshLenderId}) => {
+  const address = useRocketLendAddress();
   return (
     <section>
     <h2>Register as a Rocket Lend Lender</h2>
-    <TransactionButton
+    <TransactionSubmitter
      buttonText="Register"
      address={address}
      abi={rocketLendABI}
@@ -115,20 +71,24 @@ const CreateLendingPoolForm = () => {
   );
 }
 
-const Page: NextPage = ({constants}) => {
-  const chainName = chainNameFromId(useChainId());
+const Page: NextPage = () => {
+  const logServerUrl = useLogServerURL();
   const {address, status} = useAccount();
-  const {lenderId, refreshLenderId} = useLenderId({chainName, address, constants});
+  const {data: lenderId, error: lenderIdError, refetch: refreshLenderId} = useQuery({
+    queryKey: ['rocketlend', 'lenderId', address],
+    queryFn: serverQueryFn({
+      onJSON: (id) => BigInt(id),
+      onNotFound: () => null,
+      url: `${logServerUrl}/lenderId/${address}`
+    }),
+  });
   return (
     <IfConnected accountStatus={status}>
-      <RPLBalance accountAddress={address} chainName={chainName} />
+      <button onClick={refreshLenderId}>refresh id</button>
+      <RPLBalance accountAddress={address} />
       { typeof lenderId == 'bigint' ?
         <LenderOverview lenderId={lenderId} /> :
-        <RegisterLenderForm
-           refreshLenderId={refreshLenderId}
-           chainName={chainName}
-           constants={constants}
-        /> }
+        <RegisterLenderForm refreshLenderId={refreshLenderId} /> }
     </IfConnected>
   );
 };
