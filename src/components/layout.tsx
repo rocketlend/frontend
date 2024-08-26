@@ -73,6 +73,7 @@ const Layout: FC<{ children: ReactNode }> = ({ children }) => {
     //   </a>
     // </footer>
     // </div>
+    <>
     <StackedLayout
       navbar={
         <Navbar>
@@ -126,10 +127,10 @@ const Layout: FC<{ children: ReactNode }> = ({ children }) => {
         </Sidebar>
       }
     >
-      <main className="dark:text-white">
       {children}
-      </main>
     </StackedLayout>
+    {/* TODO footer */}
+    </>
   );
 };
 export default Layout;
