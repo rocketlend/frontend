@@ -2,15 +2,15 @@ import type { NextPage } from 'next';
 import { useState, useEffect } from 'react';
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
 import { formatEther } from 'viem';
-import rocketLendABI from '../rocketlend.abi';
-import rplABI from '../rocketTokenRPL.abi';
-import { serverQueryFn } from '../functions/serverQuery';
+import rocketLendABI from '../../rocketlend.abi';
+import rplABI from '../../rocketTokenRPL.abi';
+import { serverQueryFn } from '../../functions/serverQuery';
 import { useQuery } from '@tanstack/react-query';
-import { TransactionSubmitter } from '../components/TransactionSubmitter';
-import { IfConnected } from '../components/IfConnected';
-import { useLogServerURL } from '../hooks/useLogServerURL';
-import { useRocketAddress } from '../hooks/useRocketAddress';
-import { useRocketLendAddress } from '../hooks/useRocketLendAddress';
+import { TransactionSubmitter } from '../../components/TransactionSubmitter';
+import { IfConnected } from '../../components/IfConnected';
+import { useLogServerURL } from '../../hooks/useLogServerURL';
+import { useRocketAddress } from '../../hooks/useRocketAddress';
+import { useRocketLendAddress } from '../../hooks/useRocketLendAddress';
 
 // TODO: add listener to events that calls refreshLenderId on new events
 // TODO: ensure lender id is fetched if necessary on page refresh
