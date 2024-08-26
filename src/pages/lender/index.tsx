@@ -84,7 +84,6 @@ const Page: NextPage = () => {
   });
   return (
     <IfConnected accountStatus={status}>
-      <button onClick={refreshLenderId}>refresh id</button>
       <RPLBalance accountAddress={address} />
       { typeof lenderId == 'bigint' ?
         <LenderOverview lenderId={lenderId} /> :

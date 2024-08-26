@@ -2,7 +2,7 @@ import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { useAddRecentTransaction } from "@rainbow-me/rainbowkit";
 import { Abi } from "abitype";
 import { FC, useEffect } from "react";
-import { Button } from "@headlessui/react";
+import { Button } from "./button";
 
 export const TransactionSubmitter: FC<{
   address: `0x${string}`;
