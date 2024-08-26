@@ -25,9 +25,16 @@ const RPLBalance = ({accountAddress} : {accountAddress: `0x${string}`}) => {
     args: [accountAddress]
   });
   return (
-    <p>Balance:
-      {typeof rplBalance == 'bigint' ? ` ${formatEther(rplBalance)} RPL` : ` Balance Type: ${typeof rplBalance} ${rplAddressStatus} ${rplBalanceStatus}; Address Error: ${rplAddressError}; Balance Error: ${rplBalanceError}`}
-    </p>
+    typeof rplBalance == 'bigint' ?
+      <p>Balance: {formatEther(rplBalance)} RPL</p> :
+    <ul>
+      <li>Addresses {rplAddress}; {accountAddress}</li>
+      <li>Address Types {typeof rplAddress}; {typeof accountAddress}</li>
+      <li>Balance Type: {typeof rplBalance}</li>
+      <li>Statuses: {rplAddressStatus} {rplBalanceStatus}</li>
+      <li>Address Error: {rplAddressError?.toString() || 'none'}</li>
+      <li>Balance Error: {rplBalanceError?.toString() || 'none'}</li>
+    </ul>
   );
 };
 
@@ -35,6 +42,11 @@ type RefetchType = (options?: { throwOnError: boolean, cancelRefetch: boolean })
 
 const RegisterLenderForm = ({refreshLenderId} : {refreshLenderId: RefetchType}) => {
   const address = useRocketLendAddress();
+  const onSuccess = () => {
+    console.log(`Register transaction success`);
+    // TODO: add a delay so the log server can catch up? or put this in a loop until it changes?
+    return refreshLenderId();
+  };
   return (
     <section>
     <h2>Register as a Rocket Lend Lender</h2>
@@ -43,7 +55,7 @@ const RegisterLenderForm = ({refreshLenderId} : {refreshLenderId: RefetchType}) 
      address={address}
      abi={rocketLendABI}
      functionName="registerLender"
-     onSuccess={refreshLenderId}
+     onSuccess={onSuccess}
     />
     </section>
   );
