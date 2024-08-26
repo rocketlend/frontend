@@ -6,6 +6,7 @@ import rocketLendABI from '../../rocketlend.abi';
 import rplABI from '../../rocketTokenRPL.abi';
 import { serverQueryFn } from '../../functions/serverQuery';
 import { useQuery } from '@tanstack/react-query';
+import type { UseQueryResult } from '@tanstack/react-query';
 import { TransactionSubmitter } from '../../components/TransactionSubmitter';
 import { IfConnected } from '../../components/IfConnected';
 import { useLogServerURL } from '../../hooks/useLogServerURL';
@@ -15,7 +16,7 @@ import { useRocketLendAddress } from '../../hooks/useRocketLendAddress';
 // TODO: add listener to events that calls refreshLenderId on new events
 // TODO: ensure lender id is fetched if necessary on page refresh
 
-const RPLBalance = ({accountAddress}) => {
+const RPLBalance = ({accountAddress} : {accountAddress: `0x${string}`}) => {
   const {data: rplAddress, error: rplAddressError, fetchStatus: rplAddressStatus} = useRocketAddress('rocketTokenRPL');
   const {data: rplBalance, error: rplBalanceError, fetchStatus: rplBalanceStatus} = useReadContract({
     abi: rplABI,
@@ -30,7 +31,9 @@ const RPLBalance = ({accountAddress}) => {
   );
 };
 
-const RegisterLenderForm = ({refreshLenderId}) => {
+type RefetchType = (options?: { throwOnError: boolean, cancelRefetch: boolean }) => Promise<UseQueryResult>;
+
+const RegisterLenderForm = ({refreshLenderId} : {refreshLenderId: RefetchType}) => {
   const address = useRocketLendAddress();
   return (
     <section>
@@ -46,7 +49,7 @@ const RegisterLenderForm = ({refreshLenderId}) => {
   );
 };
 
-const LenderOverview = ({lenderId}) => {
+const LenderOverview = ({lenderId} : {lenderId: bigint}) => {
   return (
     <>
       <section>
@@ -77,14 +80,19 @@ const Page: NextPage = () => {
   const {data: lenderId, error: lenderIdError, refetch: refreshLenderId} = useQuery({
     queryKey: ['rocketlend', 'lenderId', address],
     queryFn: serverQueryFn({
-      onJSON: (id) => BigInt(id),
-      onNotFound: () => null,
+      onJSON: async (id) => {
+        if (typeof id == 'string')
+          return BigInt(id);
+        else
+          throw new Error(`Unexpected lenderId type ${typeof id}`);
+      },
+      onNotFound: async () => null,
       url: `${logServerUrl}/lenderId/${address}`
     }),
   });
   return (
     <IfConnected accountStatus={status}>
-      <RPLBalance accountAddress={address} />
+      <RPLBalance accountAddress={address as `0x${string}`} />
       { typeof lenderId == 'bigint' ?
         <LenderOverview lenderId={lenderId} /> :
         <RegisterLenderForm refreshLenderId={refreshLenderId} /> }

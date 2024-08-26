@@ -7,7 +7,7 @@ import {
 
 export const config = getDefaultConfig({
   appName: 'RocketLend',
-  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_ID,
+  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_ID || '',
   chains: [
     mainnet,
     holesky,
