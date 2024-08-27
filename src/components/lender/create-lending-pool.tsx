@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Description,
   Field,
@@ -12,13 +13,20 @@ import { Button } from "../button";
 import { Radio, RadioField, RadioGroup } from "../radio";
 
 const CreateLendingPool = () => {
+  const [allowAllAddresses, setAllowAllAddresses] = useState(true);
+  const [allowedAddresses, setAllowedAddresses] = useState([]);
+
+  const handleBorrowerPreferenceChange = (value: string) => {
+    setAllowAllAddresses(value === "allow_all");
+  };
+
   const showBorrowerList = () => {
     // TODO
   };
 
   return (
     <form>
-      <Fieldset>
+      <Fieldset className=" rounded-xl p-6">
         <Legend>Create lending pool</Legend>
         <FieldGroup>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
@@ -39,16 +47,21 @@ const CreateLendingPool = () => {
               <Label>{"Transfer allowance (optional)"}</Label>
               <Input name="transfer_allowance" />
             </Field>
-            <RadioGroup defaultValue="allow_all">
+
+            <RadioGroup defaultValue="allow_all" value={allowAllAddresses ? "allow_all" : "allow_some"} onChange={handleBorrowerPreferenceChange}>
               <RadioField>
                 <Radio value="allow_all" />
                 <Label>Allow all borrowers</Label>
               </RadioField>
               <RadioField>
-                <Radio value="allow_some" onChange={showBorrowerList}/>
+                <Radio value="allow_some" />
                 <Label>Specify a list of allowed borrowers</Label>
               </RadioField>
             </RadioGroup>
+          
+            {!allowAllAddresses && (
+              <div>TODO</div>
+            )}
           </div>
         </FieldGroup>
       </Fieldset>

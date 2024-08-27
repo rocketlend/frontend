@@ -136,6 +136,7 @@ const Page: NextPage = () => {
       <RPLBalance accountAddress={address as `0x${string}`} />
       {typeof lenderIdData?.lenderId == "bigint" ? (
         <LenderOverview lenderId={lenderIdData.lenderId} />
+        // <LenderOverview lenderId={BigInt(0)} /> // for lazy UI testing
       ) : (
         <RegisterLenderForm lenderIdBlockNumber={lenderIdData?.untilBlock} refreshLenderId={refreshLenderId} />
       )}
