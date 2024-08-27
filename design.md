@@ -52,9 +52,18 @@ changed-to account.
   - (optional) list of addresses of allowed borrowers, default is everyone - maybe an explanatory tooltip
 
 ### Manage a pool
+#### Possible pool states:
+- not expired
+- expired and active
+  - debt (that they may want to seize)
+  - no debt but still funds in the pool
+- expired and inactive (archived)
+
+#### Overview
 - overview includes:
   - some subset of: interest rate, end time, amount RPL available in pool, amount RPL borrowed from pool, amount of interest accrued, list of borrower entities (addresses and/or ENS names), allowed-to-borrow list, ETH balance (only happens if there's a default on a loan, ETH is reclaimed)
 
+#### Other views
 - Supply RPL
   - display current amount supplied
   - input of how much to add
@@ -95,8 +104,26 @@ changed-to account.
     - "remove" lets you select checkboxes from the list, then submit
 
 ### Manage a loan
+See [protocol](https://github.com/rocketlend/protocol?tab=readme-ov-file#structs) for state and parameters.
 
-- Force claim RPL and/or ETH in expired loans
+Actions:
+- Force claim funds from expired loan
+  - can be in RPL or ETH (ETH is collateral)
+  - if RPL: ability to do this is contigent on, and the lender should see:
+    - how much RPL available on the node
+      - cool-down period
+      - withdrawal limit
+    - how much debt there is on the loan
+    - how much RPL is in the borrower's Rocket Lend balance
+  - if ETH, the lender should see:
+    - price of RPL in ETH (at what rate the exchange will be made)
+    - how much ETH available in the borrower's Rocket Lend balance
+    - how much debt on the loan (in RPL and ETH at current price)
+- Force claim Merkle rewards
+  - list of unclaimed intervals and what they're worth
+  - option to select which ones you want to try to claim
+  - UI should maybe stop you from selecting more than the total amount you want repaid towards the loan
+  - specify how much you want to repay debt with
 
 ## Borrower actions
 - borrow is a route

@@ -28,6 +28,7 @@ const ChangeAddress = () => {
               <Input name="new_address" />
             </Field>
             <CheckboxField>
+              {/* TODO default checked */}
               <Label>Require confirmation</Label>
               <Checkbox
                 aria-label="Require confirmation"
