@@ -21,17 +21,23 @@ const ChangeAddress = () => {
           {"[Maybe say something here about why you'd want to do this]"}
         </Text>
         <FieldGroup>
-          <Field>
-            <Label>New address</Label>
-            <Input name="new_address" />
-          </Field>
-          <CheckboxField>
-            <Label>Require confirmation</Label>
-            <Checkbox aria-label="Require confirmation" name="require_confirmation"/>
-          </CheckboxField>
+          {/* TODO fix spacing/alignment */}
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
+            <Field>
+              <Label>New address</Label>
+              <Input name="new_address" />
+            </Field>
+            <CheckboxField>
+              <Label>Require confirmation</Label>
+              <Checkbox
+                aria-label="Require confirmation"
+                name="require_confirmation"
+              />
+            </CheckboxField>
+          </div>
         </FieldGroup>
-        <Button>Submit</Button>
       </Fieldset>
+      <Button className="cursor-pointer">Submit</Button>
     </form>
   );
 };
