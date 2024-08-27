@@ -1,42 +1,88 @@
-import type { NextPage } from 'next';
-import styles from '../styles/Home.module.css';
+import type { NextPage } from "next";
+import Link from "next/link";
+import Card from "../components/card";
+import styles from "../styles/Home.module.css";
+import {
+  RocketLaunchIcon,
+  BanknotesIcon,
+  MagnifyingGlassPlusIcon,
+  BookOpenIcon,
+} from "@heroicons/react/24/outline";
+import { classNames } from "../functions/classNameJoin";
+
+const infoCards = [
+  {
+    title: "Lend RPL to be Staked",
+    href: "/lender",
+    content: ["Get started as a Lender!", "Earn interest on your RPL."],
+    icon: RocketLaunchIcon,
+    iconForeground: "text-orange-700",
+    iconBackground: "bg-orange-50",
+  },
+  {
+    title: "Borrow RPL for your Node",
+    href: "/borrower",
+    content: [
+      "Get RPL to stake on Rocket Pool!",
+      "No extra collateral required.",
+    ],
+    icon: BanknotesIcon,
+    iconForeground: "text-green-700",
+    iconBackground: "bg-green-50",
+  },
+  {
+    title: "Rocket Lend Explorer",
+    href: "/explorer",
+    content: ["See active loans and pools."],
+    icon: MagnifyingGlassPlusIcon,
+    iconForeground: "text-blue-700",
+    iconBackground: "bg-blue-50",
+  },
+  {
+    title: "Docs and Info",
+    href: "/docs",
+    content: ["How Rocket Lend works."],
+    icon: BookOpenIcon,
+    iconForeground: "text-teal-700",
+    iconBackground: "bg-teal-50",
+  },
+];
 
 const Home: NextPage = () => {
   return (
     <>
-      <h1 className={styles.title}>
-        Welcome to Rocket Lend!
-      </h1>
+      <h1 className={styles.title}>Welcome to Rocket Lend!</h1>
 
       <p className={styles.description}>
-        The immutable protocol for borrowing and lending staked <a href="https://etherscan.io/address/0xd33526068d116ce69f19a9ee46f0bd304f21a51f">RPL</a> for use on <a href="https://rocketpool.net">Rocket Pool</a> nodes.
+        The immutable protocol for borrowing and lending staked{" "}
+        <a href="https://etherscan.io/address/0xd33526068d116ce69f19a9ee46f0bd304f21a51f">
+          RPL
+        </a>{" "}
+        for use on <a href="https://rocketpool.net">Rocket Pool</a> nodes.
       </p>
 
-      <div className={styles.grid}>
-        <a className={styles.card} href="lender">
-          <h2>Lend RPL to be Staked</h2>
-          <p>Get started as a Lender!</p>
-          <p>Earn interest on your RPL.</p>
-        </a>
-
-        <a className={styles.card} href="borrower">
-          <h2>Borrow RPL for your Node</h2>
-          <p>Get RPL to stake on Rocket Pool!</p>
-          <p>No extra collateral required.</p>
-        </a>
-
-        <a className={styles.card} href="explorer">
-          <h2>Rocket Lend Explorer</h2>
-          <p>See active loans and pools.</p>
-        </a>
-
-        <a
-          className={styles.card}
-          href="docs"
-        >
-          <h2>Docs and Info</h2>
-          <p>How Rocket Lend works.</p>
-        </a>
+      <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-transparent shadow sm:grid sm:grid-cols-2 sm:gap-px sm:divide-y-0">
+        {infoCards.map((card, index) => {
+          return (
+            <Link key={index} href={card.href}>
+              <div
+                className={classNames(
+                  index === 0
+                    ? "rounded-tl-lg rounded-tr-lg sm:rounded-tr-none"
+                    : "",
+                  index === 1 ? "sm:rounded-tr-lg" : "",
+                  index === infoCards.length - 2 ? "sm:rounded-bl-lg" : "",
+                  index === infoCards.length - 1
+                    ? "rounded-bl-lg rounded-br-lg sm:rounded-bl-none"
+                    : "",
+                  "group relative bg-white p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500"
+                )}
+              >
+                <Card card={card} />
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </>
   );

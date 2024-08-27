@@ -1,5 +1,5 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import Head from "next/head";
+// import Head from "next/head";
 import { StackedLayout } from "./stacked-layout";
 import {
   Navbar,
