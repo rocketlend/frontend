@@ -70,7 +70,10 @@ app.get(`/lenderId/:address(${addressRe})`, async (req, res, next) => {
     const address = req.params.address.toLowerCase()
     const {lenderId} = lenderIdByAddress.data[address] || {}
     if (typeof lenderId == 'bigint')
-      return res.status(200).json(lenderId.toString())
+      return res.status(200).json({
+        untilBlock: lenderIdByAddress.untilBlock,
+        lenderId: lenderId.toString(),
+      })
     else
       return res.status(404).end()
   }

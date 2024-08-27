@@ -1,6 +1,6 @@
 export function serverQueryFn<T>(
   {onJSON, onNotFound, url} : {
-    onJSON: (j: Object | string | number | boolean) => Promise<T>;
+    onJSON: (j: any) => Promise<T>; // TODO: could we improve on this `any` by depending on `url`'s value?
     onNotFound: () => Promise<T>;
     url: string
   }

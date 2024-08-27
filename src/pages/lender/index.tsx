@@ -7,6 +7,7 @@ import {
   useAccount,
 } from "wagmi";
 import { formatEther } from "viem";
+import type { TransactionReceipt } from "viem";
 import rocketLendABI from "../../rocketlend.abi";
 import rplABI from "../../rocketTokenRPL.abi";
 import { serverQueryFn } from "../../functions/serverQuery";
@@ -67,14 +68,17 @@ type RefetchType = (options?: {
 
 const RegisterLenderForm = ({
   refreshLenderId,
+  lenderIdBlockNumber
 }: {
   refreshLenderId: RefetchType;
+  lenderIdBlockNumber: number | undefined
 }) => {
   const address = useRocketLendAddress();
-  const onSuccess = () => {
-    console.log(`Register transaction success`);
-    // TODO: add a delay so the log server can catch up? or put this in a loop until it changes?
-    return refreshLenderId();
+  const onSuccess = (receipt: TransactionReceipt) => {
+    console.log(`Register transaction success in block ${receipt.blockNumber}`);
+    console.log(`Current lenderIdBlockNumber: ${lenderIdBlockNumber}`);
+    if (!lenderIdBlockNumber || lenderIdBlockNumber < receipt.blockNumber)
+      refreshLenderId();
   };
   return (
     <section>
@@ -111,15 +115,17 @@ const Page: NextPage = () => {
   const logServerUrl = useLogServerURL();
   const { address, status } = useAccount();
   const {
-    data: lenderId,
+    data: lenderIdData,
     error: lenderIdError,
     refetch: refreshLenderId,
   } = useQuery({
     queryKey: ["rocketlend", "lenderId", address],
     queryFn: serverQueryFn({
-      onJSON: async (id) => {
-        if (typeof id == "string") return BigInt(id);
-        else throw new Error(`Unexpected lenderId type ${typeof id}`);
+      onJSON: async ({lenderId, untilBlock}: {lenderId: string, untilBlock: number}) => {
+        return {
+          lenderId: BigInt(lenderId),
+          untilBlock
+        };
       },
       onNotFound: async () => null,
       url: `${logServerUrl}/lenderId/${address}`,
@@ -128,10 +134,10 @@ const Page: NextPage = () => {
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address as `0x${string}`} />
-      {typeof lenderId == "bigint" ? (
-        <LenderOverview lenderId={lenderId} />
+      {typeof lenderIdData?.lenderId == "bigint" ? (
+        <LenderOverview lenderId={lenderIdData.lenderId} />
       ) : (
-        <RegisterLenderForm refreshLenderId={refreshLenderId} />
+        <RegisterLenderForm lenderIdBlockNumber={lenderIdData?.untilBlock} refreshLenderId={refreshLenderId} />
       )}
     </IfConnected>
   );
