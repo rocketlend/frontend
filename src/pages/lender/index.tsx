@@ -40,10 +40,10 @@ const RPLBalance = ({ accountAddress }: { accountAddress: `0x${string}` }) => {
     args: [accountAddress],
   });
   return (
-    <>
-      {/* typeof rplBalance == 'bigint' ? */}
-      {/* <p>Balance: {formatEther(rplBalance)} RPL</p> : */}
+      typeof rplBalance == 'bigint' ?
+      <p>Balance: {formatEther(rplBalance)} RPL</p> :
       <ul>
+        <li>ERROR GETTING RPL BALANCE, DEBUG INFO BELOW</li>
         <li>
           Addresses {rplAddress}; {accountAddress}
         </li>
@@ -57,7 +57,6 @@ const RPLBalance = ({ accountAddress }: { accountAddress: `0x${string}` }) => {
         <li>Address Error: {rplAddressError?.toString() || "none"}</li>
         <li>Balance Error: {rplBalanceError?.toString() || "none"}</li>
       </ul>
-    </>
   );
 };
 
