@@ -97,27 +97,15 @@ const LenderOverview = ({ lenderId }: { lenderId: bigint }) => {
         <h2>Your Lending Pools</h2>
         <p>TODO only show this if there are existing pools for this lender</p>
       </section>
-      <CreateLendingPoolForm />
+      <CreateLendingPool />
       <section>
         <h2>Transfer Lender Id</h2>
         <p>Current Lender Id: {lenderId.toString()}</p>
-        <p>TODO form to transfer id to another address</p>
+        <ChangeAddress />
       </section>
     </>
   );
 };
-
-const CreateLendingPoolForm = () => {
-  return (
-    <CreateLendingPool />
-  );
-};
-
-const ChangeLenderAddressForm = () => {
-  return (
-    <ChangeAddress />
-  )
-}
 
 const Page: NextPage = () => {
   const logServerUrl = useLogServerURL();
