@@ -18,13 +18,18 @@ import { TransactionSubmitter } from "../TransactionSubmitter";
 import rocketLendABI from "../../rocketlend.abi";
 
 const CreateLendingPool = () => {
+  // QUESTION should these be declared BigInts or converted when preparing the transaction?
+  const [interestRate, setInterestRate] = useState(0);
+  const [endTime, setEndTime] = useState(0);
+  const [andSupply, setAndSupply] = useState(0);
+  const [allowance, setAllowance] = useState(0);
   const [allowAllAddresses, setAllowAllAddresses] = useState(true);
-  const [allowedAddresses, setAllowedAddresses] = useState(["test"]);
+  const [allowedAddresses, setAllowedAddresses] = useState<string[]>([]);
   const [newAddress, setNewAddress] = useState("");
   const [showAddressInput, setShowAddressInput] = useState(false);
   const rocketLendAddress = useRocketLendAddress();
-  const {address: lenderAddress} = useAccount();
-  const nullAddress = '0x'.padEnd(42, '0');
+  const { address: lenderAddress } = useAccount();
+  const nullAddress = "0x".padEnd(42, "0");
 
   const handleBorrowerPreferenceChange = (value: string) => {
     setAllowAllAddresses(value === "allow_all");
@@ -45,11 +50,7 @@ const CreateLendingPool = () => {
     setAllowedAddresses(newAddresses);
   };
 
-  const borrowers = allowAllAddresses ? [nullAddress] : allowedAddresses;
-  const interestRate = BigInt(0); // TODO
-  const endTime = BigInt(0); // TODO
-  const andSupply = BigInt(0); // TODO
-  const allowance = BigInt(0); // TODO
+  // const borrowers = allowAllAddresses ? [nullAddress] : allowedAddresses; // maybe do this when preparing the transaction
 
   return (
     <form
@@ -65,20 +66,21 @@ const CreateLendingPool = () => {
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
             <Field>
               <Label>Interest rate</Label>
-              <Input name="interest_rate" />
+              <Input value={interestRate} name="interest_rate" onChange={(e) => setInterestRate(Number(e.target.value))} />
             </Field>
+            {/* TODO deal with date/time */}
             <Field>
               <Label>End time</Label>
-              <Input name="end_time" />
+              <Input value={endTime} name="end_time" onChange={(e) => setEndTime(Number(e.target.value))} />
             </Field>
             <Field>
               <Label>{"Initial RPL supply (optional)"}</Label>
               {/* TODO indicate how much RPL is approved/available */}
-              <Input name="rpl_supply" />
+              <Input value={andSupply} name="and_supply" onChange={(e) => setAndSupply(Number(e.target.value))} />
             </Field>
             <Field>
               <Label>{"Transfer allowance (optional)"}</Label>
-              <Input name="transfer_allowance" />
+              <Input value={allowance} name="allowance" onChange={(e) => setAllowance(Number(e.target.value))} />
             </Field>
 
             <RadioGroup
@@ -102,44 +104,44 @@ const CreateLendingPool = () => {
             <FieldGroup className="grid grid-cols-1 justify-items-center">
               <Label>Addresses to allow:</Label>
               {/* TODO make this a table or a dl */}
-                <div>
-                  {allowedAddresses.map((address, idx) => (
-                    <div key={idx} className="flex gap-2 items-center">
-                      <Text>{address}</Text>
-                      <Button
-                        plain
-                        type="button"
-                        onClick={() => handleRemoveAddress(idx)}
-                      >
-                        <TrashIcon />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-                {showAddressInput ? (
-                  <div className="flex gap-2">
-                    <Input
-                      value={newAddress}
-                      onChange={(e) => setNewAddress(e.target.value)}
-                    />
+              <div>
+                {allowedAddresses.map((address, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Text>{address}</Text>
                     <Button
                       plain
                       type="button"
-                      onClick={handleAddAddress}
-                      className="cursor-pointer"
+                      onClick={() => handleRemoveAddress(idx)}
                     >
-                      <PlusCircleIcon />
+                      <TrashIcon />
                     </Button>
                   </div>
-                ) : (
+                ))}
+              </div>
+              {showAddressInput ? (
+                <div className="flex gap-2">
+                  <Input
+                    value={newAddress}
+                    onChange={(e) => setNewAddress(e.target.value)}
+                  />
                   <Button
-                    outline
+                    plain
                     type="button"
-                    onClick={() => setShowAddressInput(true)}
+                    onClick={handleAddAddress}
+                    className="cursor-pointer"
                   >
-                    Add address
+                    <PlusCircleIcon />
                   </Button>
-                )}
+                </div>
+              ) : (
+                <Button
+                  outline
+                  type="button"
+                  onClick={() => setShowAddressInput(true)}
+                >
+                  Add address
+                </Button>
+              )}
             </FieldGroup>
           )}
         </FieldGroup>
@@ -150,11 +152,16 @@ const CreateLendingPool = () => {
           Clear
         </Button>
         <TransactionSubmitter
-         buttonText="Submit"
-         address={rocketLendAddress}
-         abi={rocketLendABI}
-         functionName="createPool"
-         args={[[lenderAddress, interestRate, endTime], andSupply, allowance, borrowers]}
+          buttonText="Submit"
+          address={rocketLendAddress}
+          abi={rocketLendABI}
+          functionName="createPool"
+          args={[
+            [lenderAddress, interestRate, endTime],
+            andSupply,
+            allowance,
+            allowAllAddresses ? nullAddress : allowedAddresses, // seem ok?
+          ]}
         />
       </div>
     </form>
