@@ -33,7 +33,7 @@ export const TransactionSubmitter: FC<{
   };
   useEffect(() => {
     if (isConfirmed && onSuccess) onSuccess(receipt);
-  }, [isConfirmed, onSuccess, receipt]); // TODO: move to handler?
+  }, [isConfirmed, receipt]); // TODO: move to handler?
   // TODO: also log errors in console somehow
   // TODO: should this be a modal instead of div?
   // TODO: allow customisation on when it should be disabled (e.g. allow duplicate or not)
