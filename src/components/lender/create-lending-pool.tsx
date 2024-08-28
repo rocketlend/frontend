@@ -15,8 +15,8 @@ import { TrashIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
 
 const CreateLendingPool = () => {
   const [allowAllAddresses, setAllowAllAddresses] = useState(true);
-  const [allowedAddresses, setAllowedAddresses] = useState(['test']);
-  const [newAddress, setNewAddress] = useState('');
+  const [allowedAddresses, setAllowedAddresses] = useState(["test"]);
+  const [newAddress, setNewAddress] = useState("");
   const [showAddressInput, setShowAddressInput] = useState(false);
 
   const handleBorrowerPreferenceChange = (value: string) => {
@@ -27,7 +27,7 @@ const CreateLendingPool = () => {
     const addressToAdd = newAddress.trim();
     if (addressToAdd) {
       setAllowedAddresses([...allowedAddresses, addressToAdd]);
-      setNewAddress('');
+      setNewAddress("");
       setShowAddressInput(false);
     }
   };
@@ -38,9 +38,15 @@ const CreateLendingPool = () => {
   };
 
   return (
-    <form className="rounded-xl p-6">
+    <form
+      action=""
+      method=""
+      className="sm:flex sm:flex-col gap-8 space-y-8 rounded-xl p-6 sm:mx-auto sm:max-w-prose border border-zinc-800 bg-zinc-800/40"
+    >
       <Fieldset>
-        <Legend>Create lending pool</Legend>
+        <Legend>
+          <h2 className="text-xl">Create pool</h2>
+        </Legend>
         <FieldGroup>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
             <Field>
@@ -61,7 +67,12 @@ const CreateLendingPool = () => {
               <Input name="transfer_allowance" />
             </Field>
 
-            <RadioGroup defaultValue="allow_all" value={allowAllAddresses ? "allow_all" : "allow_some"} onChange={handleBorrowerPreferenceChange}>
+            <RadioGroup
+              className="justify-center col-span-1 sm:col-span-2 mt-6 space-y-6 sm:flex sm:items-center sm:space-x-10 sm:space-y-0"
+              defaultValue="allow_all"
+              value={allowAllAddresses ? "allow_all" : "allow_some"}
+              onChange={handleBorrowerPreferenceChange}
+            >
               <RadioField>
                 <Radio value="allow_all" />
                 <Label>Allow all borrowers</Label>
@@ -72,42 +83,60 @@ const CreateLendingPool = () => {
               </RadioField>
             </RadioGroup>
           </div>
-          
-            {!allowAllAddresses && (
-              <FieldGroup>
-                <Label>Addresses to allow:</Label>
-                <div className="mt-1">
+
+          {!allowAllAddresses && (
+            <FieldGroup className="grid grid-cols-1 justify-items-center">
+              <Label>Addresses to allow:</Label>
+              {/* TODO make this a table or a dl */}
+                <div>
                   {allowedAddresses.map((address, idx) => (
-                    <div key={idx} className="flex">
-                    <Text>{address}</Text>
-                    <Button type="button" onClick={() => handleRemoveAddress(idx)}>
-                      <TrashIcon />
-                    </Button>
+                    <div key={idx} className="flex gap-2 items-center">
+                      <Text>{address}</Text>
+                      <Button
+                        plain
+                        type="button"
+                        onClick={() => handleRemoveAddress(idx)}
+                      >
+                        <TrashIcon />
+                      </Button>
                     </div>
                   ))}
-                  {showAddressInput ? (
-                    <>
-                    <Input 
+                </div>
+                {showAddressInput ? (
+                  <div className="flex gap-2">
+                    <Input
                       value={newAddress}
                       onChange={(e) => setNewAddress(e.target.value)}
                     />
                     <Button
+                      plain
                       type="button"
                       onClick={handleAddAddress}
-                      className="cursor-pointer"><PlusCircleIcon /></Button>
-                      </>
-                  ) : (
-                    <Button
-                      type="button"
-                      onClick={() => setShowAddressInput(true)}
-                    >Add address</Button>
-                  )}
-                </div>
-              </FieldGroup>
-            )}
+                      className="cursor-pointer"
+                    >
+                      <PlusCircleIcon />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    outline
+                    type="button"
+                    onClick={() => setShowAddressInput(true)}
+                  >
+                    Add address
+                  </Button>
+                )}
+            </FieldGroup>
+          )}
         </FieldGroup>
       </Fieldset>
-      <Button className="cursor-pointer">Submit</Button>
+      <div className="sm:self-end space-x-4">
+        {/* TODO make this button clear addresses as well */}
+        <Button type="reset" plain className="cursor-pointer">
+          Clear
+        </Button>
+        <Button className="cursor-pointer">Submit</Button>
+      </div>
     </form>
   );
 };

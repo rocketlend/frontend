@@ -40,7 +40,7 @@ export const TransactionSubmitter: FC<{
   return (
     <div>
       <Button
-        className="btn-primary"
+        className="cursor-pointer"
         disabled={isPending || (isWritten && !(errorOnWait || isConfirmed))}
         onClick={handler}
       >

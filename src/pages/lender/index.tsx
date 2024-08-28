@@ -153,12 +153,12 @@ const Page: NextPage = () => {
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address as `0x${string}`} />
-      {lenderIdsData?.lenderIds.length ? (
-        <LenderOverview lenderIds={lenderIdsData.lenderIds} />
-        // {/* <LenderOverview lenderIds={["0"]} /> */}
-      ) : (
+      {/* {lenderIdsData?.lenderIds.length ? ( */}
+        {/* <LenderOverview lenderIds={lenderIdsData.lenderIds} /> */}
+        <LenderOverview lenderIds={["0"]} />
+      {/* ) : (
         <RegisterLenderForm setRefreshUntilBlock={setRefreshUntilBlock} />
-      )}
+      )} */}
     </IfConnected>
   );
 };
