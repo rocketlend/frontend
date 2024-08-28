@@ -67,19 +67,21 @@ type RefetchType = (options?: {
   cancelRefetch: boolean;
 }) => Promise<UseQueryResult>;
 
+type RefreshUntilBlockType = { blockNumber?: undefined, needsRefresh?: undefined } | { blockNumber: number, needsRefresh: true };
+
 const RegisterLenderForm = ({
   setRefreshUntilBlock,
 }: {
-  setRefreshUntilBlock: Dispatch<SetStateAction<number | undefined>>;
+  setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
 }) => {
   const address = useRocketLendAddress();
   const onSuccess = (receipt: TransactionReceipt) => {
     console.log(`Register transaction success in block ${receipt.blockNumber}`);
     const blockNumber = Number(receipt.blockNumber);
     setRefreshUntilBlock(prev => {
-      const stale = typeof prev == 'undefined' || prev < blockNumber;
-      console.log(`refreshUntilBlock stale: ${stale}`);
-      return stale ? blockNumber : prev;
+      const {blockNumber: prevBlockNumber} = prev;
+      const stale = typeof prevBlockNumber == 'undefined' || prevBlockNumber < blockNumber;
+      return stale ? {blockNumber, needsRefresh: true} : prev;
     });
     // other options:
     // 1. just use the receipt, ignore server;
@@ -135,20 +137,20 @@ const Page: NextPage = () => {
       url: `${logServerUrl}/lenderId/${address}`,
     }),
   });
-  const [refreshUntilBlock, setRefreshUntilBlock] = useState<number | undefined>();
+  const [refreshUntilBlock, setRefreshUntilBlock] = useState<RefreshUntilBlockType>({});
   useEffect(() => {
-    if (typeof refreshUntilBlock != 'undefined') {
-      console.log(`refreshUntilBlock: ${refreshUntilBlock}`)
-      console.log(lenderIdsData)
+    if (refreshUntilBlock.needsRefresh) {
       if (typeof lenderIdsData == 'undefined' ||
-          lenderIdsData.untilBlock < refreshUntilBlock) {
-        console.log(`refetching ids`)
-        refreshLenderIds({cancelRefetch: false});
+          lenderIdsData.untilBlock < refreshUntilBlock.blockNumber) {
+        refreshLenderIds().then(
+          () => setRefreshUntilBlock(
+            ({blockNumber}) => typeof blockNumber == 'undefined' ? {} : {blockNumber, needsRefresh: true}
+          )
+        );
       }
       else
-        setRefreshUntilBlock(undefined);
+        setRefreshUntilBlock({});
     }
-    else console.log(`refreshUntilBlock undefined`);
   }, [refreshUntilBlock, lenderIdsData]);
   return (
     <IfConnected accountStatus={status}>
