@@ -22,9 +22,6 @@ import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import ChangeAddress from "../../components/lender/change-address";
 import CreateLendingPool from "../../components/lender/create-lending-pool";
 
-// TODO: add listener to events that calls refreshLenderId on new events
-// TODO: ensure lender id is fetched if necessary on page refresh
-
 const RPLBalance = ({ accountAddress }: { accountAddress: `0x${string}` }) => {
   const {
     data: rplAddress,
@@ -152,15 +149,13 @@ const Page: NextPage = () => {
         setRefreshUntilBlock({});
     }
   }, [refreshUntilBlock, lenderIdsData]);
+  // TODO: add listener to events that calls refreshLenderId on new events
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address as `0x${string}`} />
-      {/* {lenderIdsData?.lenderIds.length ? ( */}
-        {/* <LenderOverview lenderIds={lenderIdsData.lenderIds} /> */}
-        <LenderOverview lenderIds={["0"]} />
-      {/* ) : (
-        <RegisterLenderForm setRefreshUntilBlock={setRefreshUntilBlock} />
-      )} */}
+      {lenderIdsData?.lenderIds.length ?
+        <LenderOverview lenderIds={lenderIdsData.lenderIds} /> :
+        <RegisterLenderForm setRefreshUntilBlock={setRefreshUntilBlock} />}
     </IfConnected>
   );
 };

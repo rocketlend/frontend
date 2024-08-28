@@ -3,14 +3,15 @@ import { useAddRecentTransaction } from "@rainbow-me/rainbowkit";
 import { Abi } from "abitype";
 import { FC, useEffect } from "react";
 import { Button } from "./button";
+import type { TransactionReceipt } from "viem";
 
 export const TransactionSubmitter: FC<{
   address: `0x${string}`;
   abi: Abi;
   functionName: string;
-  args?: Array<any>; // TODO what is the correct type?
+  args?: Array<any>; // TODO what is the correct type? need to infer via abi?
   buttonText: string;
-  onSuccess?: (receipt: any) => void; // TODO: use correct receipt type
+  onSuccess?: (receipt: TransactionReceipt) => void;
 }> = ({ address, abi, functionName, args, buttonText, onSuccess }) => {
   const {
     writeContractAsync,
