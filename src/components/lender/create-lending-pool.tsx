@@ -12,17 +12,25 @@ import { Input } from "../input";
 import { Button } from "../button";
 import { Radio, RadioField, RadioGroup } from "../radio";
 import { TrashIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import { useAccount } from "wagmi";
+import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
+import { TransactionSubmitter } from "../TransactionSubmitter";
+import rocketLendABI from "../../rocketlend.abi";
 
 const CreateLendingPool = () => {
   const [allowAllAddresses, setAllowAllAddresses] = useState(true);
   const [allowedAddresses, setAllowedAddresses] = useState(["test"]);
   const [newAddress, setNewAddress] = useState("");
   const [showAddressInput, setShowAddressInput] = useState(false);
+  const rocketLendAddress = useRocketLendAddress();
+  const {address: lenderAddress} = useAccount();
+  const nullAddress = '0x'.padEnd(42, '0');
 
   const handleBorrowerPreferenceChange = (value: string) => {
     setAllowAllAddresses(value === "allow_all");
   };
 
+  // TODO: handle (i.e. resolve) ENS names as addresses
   const handleAddAddress = () => {
     const addressToAdd = newAddress.trim();
     if (addressToAdd) {
@@ -36,6 +44,12 @@ const CreateLendingPool = () => {
     const newAddresses = allowedAddresses.filter((_, i) => i !== idx);
     setAllowedAddresses(newAddresses);
   };
+
+  const borrowers = allowAllAddresses ? [nullAddress] : allowedAddresses;
+  const interestRate = BigInt(0); // TODO
+  const endTime = BigInt(0); // TODO
+  const andSupply = BigInt(0); // TODO
+  const allowance = BigInt(0); // TODO
 
   return (
     <form
@@ -135,7 +149,13 @@ const CreateLendingPool = () => {
         <Button type="reset" plain className="cursor-pointer">
           Clear
         </Button>
-        <Button className="cursor-pointer">Submit</Button>
+        <TransactionSubmitter
+         buttonText="Submit"
+         address={rocketLendAddress}
+         abi={rocketLendABI}
+         functionName="createPool"
+         args={[[lenderAddress, interestRate, endTime], andSupply, allowance, borrowers]}
+        />
       </div>
     </form>
   );
