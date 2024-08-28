@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Description,
   Field,
@@ -17,6 +17,8 @@ import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import { TransactionSubmitter } from "../TransactionSubmitter";
 import rocketLendABI from "../../rocketlend.abi";
 
+const NULL_ADDRESS = "0x".padEnd(42, "0");
+
 const CreateLendingPool = () => {
   // QUESTION should these be declared BigInts or converted when preparing the transaction?
   const [interestRate, setInterestRate] = useState(0);
@@ -29,7 +31,6 @@ const CreateLendingPool = () => {
   const [showAddressInput, setShowAddressInput] = useState(false);
   const rocketLendAddress = useRocketLendAddress();
   const { address: lenderAddress } = useAccount();
-  const nullAddress = "0x".padEnd(42, "0");
 
   const handleBorrowerPreferenceChange = (value: string) => {
     setAllowAllAddresses(value === "allow_all");
@@ -50,7 +51,9 @@ const CreateLendingPool = () => {
     setAllowedAddresses(newAddresses);
   };
 
-  // const borrowers = allowAllAddresses ? [nullAddress] : allowedAddresses; // maybe do this when preparing the transaction
+  const borrowers = useMemo(() => {
+    allowAllAddresses ? [NULL_ADDRESS] : allowedAddresses;
+  }, [allowAllAddresses, allowedAddresses]);
 
   return (
     <form
@@ -160,7 +163,7 @@ const CreateLendingPool = () => {
             [lenderAddress, interestRate, endTime],
             andSupply,
             allowance,
-            allowAllAddresses ? nullAddress : allowedAddresses, // seem ok?
+            borrowers
           ]}
         />
       </div>
