@@ -36,15 +36,19 @@ const updateLenderIdByAddress = async (toBlock) => {
     )
     for (const log of logs) {
       const address = log.args[log.eventName == 'RegisterLender' ? 'address' : 'new']
+      const prevKey = log.args.old?.toLowerCase()
       const key = address.toLowerCase()
-      const lenderId = log.args.id
-      const {blockNumber, logIndex} = lenderIdByAddress.data[key] || {}
+      const lenderId = log.args.id.toString()
+      lenderIdByAddress.data[key] ||= {ids: new Set()}
+      const {blockNumber, logIndex, ids} = lenderIdByAddress.data[key]
       if ((blockNumber || 0) < log.blockNumber || blockNumber == log.blockNumber && logIndex < log.index) {
-        console.log(`Updating lenderId to ${lenderId} for ${address}`)
-        lenderIdByAddress.data[key] = {
-          blockNumber: log.blockNumber,
-          logIndex: log.index,
-          lenderId
+        console.log(`Adding lenderId ${lenderId} to ${address}`)
+        lenderIdByAddress.data[key].blockNumber = log.blockNumber
+        lenderIdByAddress.data[key].logIndex = log.index
+        ids.add(lenderId)
+        if (prevKey) {
+          console.log(`Removing lenderId ${lenderId} from ${log.args.old}`)
+          lenderIdByAddress.data[prevKey].ids.delete(lenderId)
         }
       }
     }
@@ -68,14 +72,11 @@ app.use(cors())
 app.get(`/lenderId/:address(${addressRe})`, async (req, res, next) => {
   try {
     const address = req.params.address.toLowerCase()
-    const {lenderId} = lenderIdByAddress.data[address] || {}
-    if (typeof lenderId == 'bigint')
-      return res.status(200).json({
-        untilBlock: lenderIdByAddress.untilBlock,
-        lenderId: lenderId.toString(),
-      })
-    else
-      return res.status(404).end()
+    const {ids} = lenderIdByAddress.data[address] || {ids: []}
+    return res.status(200).json({
+      untilBlock: lenderIdByAddress.untilBlock,
+      lenderIds: Array.from(ids),
+    })
   }
   catch (e) { next(e) }
 })
