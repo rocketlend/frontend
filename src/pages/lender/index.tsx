@@ -1,5 +1,6 @@
 import type { NextPage } from "next";
 import { useState, useEffect } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import {
   useReadContract,
   useWriteContract,
@@ -67,18 +68,24 @@ type RefetchType = (options?: {
 }) => Promise<UseQueryResult>;
 
 const RegisterLenderForm = ({
-  refreshLenderId,
-  lenderIdBlockNumber
+  setRefreshUntilBlock,
 }: {
-  refreshLenderId: RefetchType;
-  lenderIdBlockNumber: number | undefined
+  setRefreshUntilBlock: Dispatch<SetStateAction<number | undefined>>;
 }) => {
   const address = useRocketLendAddress();
   const onSuccess = (receipt: TransactionReceipt) => {
     console.log(`Register transaction success in block ${receipt.blockNumber}`);
-    console.log(`Current lenderIdBlockNumber: ${lenderIdBlockNumber}`);
-    if (!lenderIdBlockNumber || lenderIdBlockNumber < receipt.blockNumber)
-      refreshLenderId();
+    const blockNumber = Number(receipt.blockNumber);
+    setRefreshUntilBlock(prev => {
+      const stale = typeof prev == 'undefined' || prev < blockNumber;
+      console.log(`refreshUntilBlock stale: ${stale}`);
+      return stale ? blockNumber : prev;
+    });
+    // other options:
+    // 1. just use the receipt, ignore server;
+    // 2. socket connection to server so can push;
+    // 3. polling;
+    // 4. send the log server a desired block to be above (it hangs until it gets there)
   };
   return (
     <section>
@@ -94,7 +101,7 @@ const RegisterLenderForm = ({
   );
 };
 
-const LenderOverview = ({ lenderId }: { lenderId: bigint }) => {
+const LenderOverview = ({ lenderIds }: { lenderIds: string[] }) => {
   return (
     <>
       <section>
@@ -104,7 +111,7 @@ const LenderOverview = ({ lenderId }: { lenderId: bigint }) => {
       <CreateLendingPool />
       <section>
         <h2>Transfer Lender Id</h2>
-        <p>Current Lender Id: {lenderId.toString()}</p>
+        <p>Current Lender Ids: {lenderIds.join()}</p>
         <ChangeAddress />
       </section>
     </>
@@ -115,30 +122,42 @@ const Page: NextPage = () => {
   const logServerUrl = useLogServerURL();
   const { address, status } = useAccount();
   const {
-    data: lenderIdData,
-    error: lenderIdError,
-    refetch: refreshLenderId,
+    data: lenderIdsData,
+    error: lenderIdsError,
+    refetch: refreshLenderIds,
   } = useQuery({
     queryKey: ["rocketlend", "lenderId", address],
     queryFn: serverQueryFn({
-      onJSON: async ({lenderId, untilBlock}: {lenderId: string, untilBlock: number}) => {
-        return {
-          lenderId: BigInt(lenderId),
-          untilBlock
-        };
-      },
-      onNotFound: async () => null,
+      onJSON: async ({lenderIds, untilBlock}: {lenderIds: string[], untilBlock: number}) => (
+        { lenderIds, untilBlock }
+      ),
+      onNotFound: async () => ({lenderIds: [], untilBlock: 0}),
       url: `${logServerUrl}/lenderId/${address}`,
     }),
   });
+  const [refreshUntilBlock, setRefreshUntilBlock] = useState<number | undefined>();
+  useEffect(() => {
+    if (typeof refreshUntilBlock != 'undefined') {
+      console.log(`refreshUntilBlock: ${refreshUntilBlock}`)
+      console.log(lenderIdsData)
+      if (typeof lenderIdsData == 'undefined' ||
+          lenderIdsData.untilBlock < refreshUntilBlock) {
+        console.log(`refetching ids`)
+        refreshLenderIds({cancelRefetch: false});
+      }
+      else
+        setRefreshUntilBlock(undefined);
+    }
+    else console.log(`refreshUntilBlock undefined`);
+  }, [refreshUntilBlock, lenderIdsData]);
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address as `0x${string}`} />
-      {typeof lenderIdData?.lenderId == "bigint" ? (
-        <LenderOverview lenderId={lenderIdData.lenderId} />
-        // {/* <LenderOverview lenderId={BigInt(0)} /> */}
+      {lenderIdsData?.lenderIds.length ? (
+        <LenderOverview lenderIds={lenderIdsData.lenderIds} />
+        // {/* <LenderOverview lenderIds={["0"]} /> */}
       ) : (
-        <RegisterLenderForm lenderIdBlockNumber={lenderIdData?.untilBlock} refreshLenderId={refreshLenderId} />
+        <RegisterLenderForm setRefreshUntilBlock={setRefreshUntilBlock} />
       )}
     </IfConnected>
   );
