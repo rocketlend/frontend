@@ -155,8 +155,8 @@ const Page: NextPage = () => {
       <RPLBalance accountAddress={address as `0x${string}`} />
       {lenderIdsData?.lenderIds.length ?
         <LenderOverview lenderIds={lenderIdsData.lenderIds} /> :
-        // <RegisterLenderForm setRefreshUntilBlock={setRefreshUntilBlock} />
-        <LenderOverview lenderIds={['0']} />
+        <RegisterLenderForm setRefreshUntilBlock={setRefreshUntilBlock} />
+        // <LenderOverview lenderIds={['0']} />
       }
     </IfConnected>
   );

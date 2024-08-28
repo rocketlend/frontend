@@ -57,8 +57,6 @@ const CreateLendingPool = () => {
 
   return (
     <form
-      action=""
-      method=""
       className="sm:flex sm:flex-col gap-8 space-y-8 rounded-xl p-6 sm:mx-auto sm:max-w-prose border border-zinc-800 bg-zinc-800/40"
     >
       <Fieldset>

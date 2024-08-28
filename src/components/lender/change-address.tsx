@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Description,
   Field,
@@ -13,10 +14,11 @@ import { Button } from "../button";
 
 // TODO styles, maybe descriptions/tooltips
 const ChangeAddress = () => {
+  const [requireConfirmation, setRequireConfirmation] = useState(true);
+  const [newAddress, setNewAddress] = useState('');
+
   return (
     <form
-      action=""
-      method=""
       className="sm:flex sm:flex-col gap-8 space-y-8 rounded-xl p-6 sm:mx-auto sm:max-w-prose border border-zinc-800 bg-zinc-800/40"
     >
       <Fieldset>
@@ -31,15 +33,16 @@ const ChangeAddress = () => {
           <div className="grid grid-cols-1 gap-8 sm:gap-4">
             <Field>
               <Label>New address</Label>
-              <Input name="new_address" />
+              <Input value={newAddress} name="new_address" onChange={(e) => setNewAddress(e.target.value)} />
             </Field>
             <CheckboxField>
               {/* TODO default checked */}
               <Label>Require confirmation</Label>
               <Checkbox
-                defaultChecked
                 aria-label="Require confirmation"
                 name="require_confirmation"
+                checked={requireConfirmation}
+                onChange={setRequireConfirmation}
               />
             </CheckboxField>
           </div>
