@@ -1,6 +1,7 @@
 // NOTE: not a real page! temporary for UI development convenience
 import { NextPage } from "next";
 import { PoolOverview, PoolStatsQuickView, WithdrawInterestForm } from "../components/lender/manage-pool";
+import { PoolsEmptyStateUI } from "../components/lender/create-lending-pool";
 
 const Page: NextPage = () => {
   return (
@@ -8,6 +9,7 @@ const Page: NextPage = () => {
       <PoolStatsQuickView />
       <PoolOverview />
       <WithdrawInterestForm />
+      <PoolsEmptyStateUI />
     </div>
   )
 };
