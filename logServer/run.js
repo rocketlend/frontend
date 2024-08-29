@@ -22,14 +22,14 @@ const deployBlock = parseInt(process.env.HOLESKY_DEPLOY_BLOCK)
 
 const MAX_QUERY_RANGE = 1024
 
-const lenderIdByAddress = {
+const lenderIdsByAddress = {
   untilBlock: deployBlock,
   data: {}
 }
 
-const updateLenderIdByAddress = async (toBlock) => {
-  while (lenderIdByAddress.untilBlock < toBlock) {
-    const fromBlock = lenderIdByAddress.untilBlock
+const updateLenderIdsByAddress = async (toBlock) => {
+  while (lenderIdsByAddress.untilBlock < toBlock) {
+    const fromBlock = lenderIdsByAddress.untilBlock
     const newUntilBlock = Math.min(toBlock, fromBlock + MAX_QUERY_RANGE)
     const logs = await rocketLend.queryFilter('RegisterLender', fromBlock, newUntilBlock).then(
       async logs => logs.concat(await rocketLend.queryFilter('UpdateLender', fromBlock, newUntilBlock))
@@ -39,28 +39,28 @@ const updateLenderIdByAddress = async (toBlock) => {
       const prevKey = log.args.old?.toLowerCase()
       const key = address.toLowerCase()
       const lenderId = log.args.id.toString()
-      lenderIdByAddress.data[key] ||= {ids: new Set()}
-      const {blockNumber, logIndex, ids} = lenderIdByAddress.data[key]
+      lenderIdsByAddress.data[key] ||= {ids: new Set()}
+      const {blockNumber, logIndex, ids} = lenderIdsByAddress.data[key]
       if ((blockNumber || 0) < log.blockNumber || blockNumber == log.blockNumber && logIndex < log.index) {
         console.log(`Adding lenderId ${lenderId} to ${address}`)
-        lenderIdByAddress.data[key].blockNumber = log.blockNumber
-        lenderIdByAddress.data[key].logIndex = log.index
+        lenderIdsByAddress.data[key].blockNumber = log.blockNumber
+        lenderIdsByAddress.data[key].logIndex = log.index
         ids.add(lenderId)
         if (prevKey) {
           console.log(`Removing lenderId ${lenderId} from ${log.args.old}`)
-          lenderIdByAddress.data[prevKey].ids.delete(lenderId)
+          lenderIdsByAddress.data[prevKey].ids.delete(lenderId)
         }
       }
     }
-    console.log(`Updated lenderIdByAddress to ${newUntilBlock}`)
-    lenderIdByAddress.untilBlock = newUntilBlock
+    console.log(`Updated lenderIdsByAddress to ${newUntilBlock}`)
+    lenderIdsByAddress.untilBlock = newUntilBlock
   }
 }
 
-await updateLenderIdByAddress(await provider.getBlockNumber())
+await updateLenderIdsByAddress(await provider.getBlockNumber())
 
 provider.on('block', async (blockNumber) => {
-  await updateLenderIdByAddress(blockNumber)
+  await updateLenderIdsByAddress(blockNumber)
 })
 
 const addressRe = '0x[0-9a-fA-F]{40}'
@@ -72,9 +72,9 @@ app.use(cors())
 app.get(`/lenderIds/:address(${addressRe})`, async (req, res, next) => {
   try {
     const address = req.params.address.toLowerCase()
-    const {ids} = lenderIdByAddress.data[address] || {ids: []}
+    const {ids} = lenderIdsByAddress.data[address] || {ids: []}
     return res.status(200).json({
-      untilBlock: lenderIdByAddress.untilBlock,
+      untilBlock: lenderIdsByAddress.untilBlock,
       lenderIds: Array.from(ids),
     })
   }
