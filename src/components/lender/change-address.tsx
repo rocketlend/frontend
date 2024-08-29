@@ -10,12 +10,23 @@ import {
 import { Text } from "../text";
 import { Input } from "../input";
 import { Checkbox, CheckboxField } from "../checkbox";
-import { Button } from "../button";
+import { useAccount } from "wagmi";
+import { TransactionSubmitter } from "../TransactionSubmitter";
+import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
+import rocketLendABI from "../../rocketlend.abi";
+import { lenderIdsQuery } from "../../functions/lenderIdsQuery";
+import { useQuery } from "@tanstack/react-query";
+import { useLogServerURL } from "../../hooks/useLogServerURL";
 
 // TODO styles, maybe descriptions/tooltips
 const ChangeAddress = () => {
   const [requireConfirmation, setRequireConfirmation] = useState(true);
   const [newAddress, setNewAddress] = useState('');
+  const rocketLendAddress = useRocketLendAddress();
+  const {address: lenderAddress} = useAccount();
+  const logServerUrl = useLogServerURL();
+  const {data: lenderIdsData, error: lenderIdsError} = useQuery(lenderIdsQuery({logServerUrl, address: lenderAddress}));
+  const lenderId = lenderIdsData?.lenderIds[0]; // TODO: we need to have some UI state somewhere indicating which lenderId is selected in case there are multiple
 
   return (
     <form
@@ -48,7 +59,14 @@ const ChangeAddress = () => {
           </div>
         </FieldGroup>
       </Fieldset>
-      <Button className="cursor-pointer self-center">Submit</Button>
+      {/*<Button className="cursor-pointer self-center">Submit</Button>*/}
+      <TransactionSubmitter
+       buttonText="Submit"
+       address={rocketLendAddress}
+       abi={rocketLendABI}
+       functionName="changeLenderAddress"
+       args={[lenderId, newAddress, requireConfirmation]}
+      />
     </form>
   );
 };
