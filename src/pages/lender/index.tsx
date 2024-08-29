@@ -11,7 +11,7 @@ import { formatEther } from "viem";
 import type { TransactionReceipt } from "viem";
 import rocketLendABI from "../../rocketlend.abi";
 import rplABI from "../../rocketTokenRPL.abi";
-import { serverQueryFn } from "../../functions/serverQuery";
+import { lenderIdsQuery } from "../../functions/lenderIdsQuery";
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { TransactionSubmitter } from "../../components/TransactionSubmitter";
@@ -124,16 +124,8 @@ const Page: NextPage = () => {
     data: lenderIdsData,
     error: lenderIdsError,
     refetch: refreshLenderIds,
-  } = useQuery({
-    queryKey: ["rocketlend", "lenderId", address],
-    queryFn: serverQueryFn({
-      onJSON: async ({lenderIds, untilBlock}: {lenderIds: string[], untilBlock: number}) => (
-        { lenderIds, untilBlock }
-      ),
-      onNotFound: async () => ({lenderIds: [], untilBlock: 0}),
-      url: `${logServerUrl}/lenderId/${address}`,
-    }),
-  });
+  } = useQuery(lenderIdsQuery({logServerUrl, address}));
+  // TODO: add listener to events that calls refreshLenderId on new events
   const [refreshUntilBlock, setRefreshUntilBlock] = useState<RefreshUntilBlockType>({});
   useEffect(() => {
     if (refreshUntilBlock.needsRefresh) {
@@ -149,7 +141,6 @@ const Page: NextPage = () => {
         setRefreshUntilBlock({});
     }
   }, [refreshUntilBlock, lenderIdsData]);
-  // TODO: add listener to events that calls refreshLenderId on new events
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address as `0x${string}`} />

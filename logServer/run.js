@@ -69,7 +69,7 @@ const app = express()
 
 app.use(cors())
 
-app.get(`/lenderId/:address(${addressRe})`, async (req, res, next) => {
+app.get(`/lenderIds/:address(${addressRe})`, async (req, res, next) => {
   try {
     const address = req.params.address.toLowerCase()
     const {ids} = lenderIdByAddress.data[address] || {ids: []}
