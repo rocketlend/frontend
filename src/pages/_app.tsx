@@ -16,7 +16,6 @@ const client = new QueryClient();
 const workSans = Work_Sans({
   subsets: ["latin"],
 });
-
 const karla = Karla({
   subsets: ["latin"],
 })

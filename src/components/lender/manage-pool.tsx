@@ -5,6 +5,17 @@ import {
   mockPoolParams,
   mockBorrowersState,
 } from "../../../mocks/poolMocks";
+import {
+  Fieldset,
+  FieldGroup,
+  Field,
+  Label,
+  Legend,
+  Description,
+  ErrorMessage,
+} from "../fieldset";
+import { Text } from "../text";
+import { Input } from "../input";
 
 const QuickViewCard = ({ name, value }: { name: string; value: number }) => {
   return (
@@ -50,6 +61,7 @@ const PoolOverviewItem = ({
 };
 
 // TODO see if it works to replace with TailwindUI description list components
+// TODO refactor
 export const PoolOverview = () => {
   return (
     <div className="max-w-screen-md mx-auto">
@@ -97,28 +109,7 @@ export const PoolOverview = () => {
               Current Borrowers
             </dt>
             <dd className="mt-2 text-sm text-white sm:col-span-2 sm:mt-0">
-              <ul
-                role="list"
-                className="divide-y divide-white/10 rounded-md border border-white/20"
-              >
-                {mockBorrowersState.borrowers.map((borrower, idx) => {
-                  return (
-                    <li
-                      key={idx}
-                      className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-6"
-                    >
-                      <div className="flex w-0 flex-1 items-center">
-                        <div className="ml-4 flex min-w-0 flex-1 gap-2">
-                          <span className="truncate font-medium">
-                            {borrower}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="ml-4 flex-shrink-0"></div>
-                    </li>
-                  );
-                })}
-              </ul>
+              <BorrowerList borrowers={mockBorrowersState.borrowers} />
             </dd>
           </div>
 
@@ -128,30 +119,11 @@ export const PoolOverview = () => {
             </dt>
             <dd className="mt-2 text-sm text-white sm:col-span-2 sm:mt-0">
               {mockBorrowersState.allowedToBorrow.length === 0 ? (
-                <span className="text-zinc-400 py-4 pl-4 pr-5 text-sm leading-6">All borrowers are currently allowed for this pool.</span>
+                <span className="text-zinc-400 py-4 pl-4 pr-5 text-sm leading-6">
+                  All borrowers are currently allowed for this pool.
+                </span>
               ) : (
-                mockBorrowersState.allowedToBorrow.map((borrower, idx) => {
-                  return (
-                    <ul
-                      role="list"
-                      className="divide-y divide-white/10 rounded-md border border-white/20"
-                    >
-                      <li
-                        key={idx}
-                        className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-6"
-                      >
-                        <div className="flex w-0 flex-1 items-center">
-                          <div className="ml-4 flex min-w-0 flex-1 gap-2">
-                            <span className="truncate font-medium">
-                              {borrower}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4 flex-shrink-0"></div>
-                      </li>
-                    </ul>
-                  );
-                })
+                <BorrowerList borrowers={mockBorrowersState.allowedToBorrow} />
               )}
             </dd>
           </div>
@@ -161,12 +133,84 @@ export const PoolOverview = () => {
   );
 };
 
-export const BorrowerList = () => {};
+export const BorrowerList = ({ borrowers }: { borrowers: string[] }) => {
+  return (
+    <ul
+      role="list"
+      className="divide-y divide-white/10 rounded-md border border-white/20"
+    >
+      {borrowers.map((borrower, idx) => {
+        return (
+          <li
+            key={idx}
+            className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-6"
+          >
+            <div className="flex w-0 flex-1 items-center">
+              <div className="ml-4 flex min-w-0 flex-1 gap-2">
+                <span className="truncate font-medium">{borrower}</span>
+              </div>
+            </div>
+            <div className="ml-4 flex-shrink-0"></div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
 
+// probably duplicated in "create lending pool"
 export const SupplyRPLForm = () => {};
 
+// probably duplicated in "create lending pool"
 export const WithdrawRPLForm = () => {};
 
-export const WithdrawInterestForm = () => {};
+// TODO indicate current relevant pool info, probably 
+export const WithdrawInterestForm = () => {
+  const [withdrawalAmount, setWithdrawalAmount] = useState(0);
+  const [resupplyAmount, setResupplyAmount] = useState(0);
 
+  // TODO input validation
+  const handleChangeWithdrawalAmount = (value: string) => {
+    setWithdrawalAmount(Number(value));
+  };
+
+  // TODO input validation
+  const handleChangeResupplyAmount = (value: string) => {
+    setResupplyAmount(Number(value));
+  };
+
+  return (
+    <form className="sm:max-w-xs rounded-xl p-6 border border-zinc-800 bg-zinc-800/40">
+      <Fieldset>
+        <Legend>Withdraw RPL interest</Legend>
+        <FieldGroup>
+          <Field>
+            <Label>Total amount to withdraw</Label>
+            <Input
+              type="number"
+              name="withdrawal_amount"
+              value={withdrawalAmount || ""}
+              onChange={(e) => handleChangeWithdrawalAmount(e.target.value)}
+            />
+          </Field>
+          <Field>
+            <Label>Resupply amount</Label>
+            <Description className="font-thin">
+              Of the total withdrawal amount above, indicate here how much you'd
+              like to resupply to the pool.
+            </Description>
+            <Input
+              type="number"
+              name="resupply_amount"
+              value={resupplyAmount || ""}
+              onChange={(e) => handleChangeResupplyAmount(e.target.value)}
+            />
+          </Field>
+        </FieldGroup>
+      </Fieldset>
+    </form>
+  );
+};
+
+// (maybe) page container for all these interfaces
 export const ManagePool = () => {};
