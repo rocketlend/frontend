@@ -22,45 +22,83 @@ const deployBlock = parseInt(process.env.HOLESKY_DEPLOY_BLOCK)
 
 const MAX_QUERY_RANGE = 1024
 
-const lenderIdsByAddress = {
-  untilBlock: deployBlock,
-  data: {}
+const cache = {
+  blockNumber: deployBlock,
+  logIndex: 0,
+  lenderIdsByAddress: {},
+  pendingLenderIdsByAddress: {},
 }
 
-const updateLenderIdsByAddress = async (toBlock) => {
-  while (lenderIdsByAddress.untilBlock < toBlock) {
-    const fromBlock = lenderIdsByAddress.untilBlock
-    const newUntilBlock = Math.min(toBlock, fromBlock + MAX_QUERY_RANGE)
-    const logs = await rocketLend.queryFilter('RegisterLender', fromBlock, newUntilBlock).then(
-      async logs => logs.concat(await rocketLend.queryFilter('UpdateLender', fromBlock, newUntilBlock))
-    )
+const eventNames = [
+  'RegisterLender',
+  'PendingChangeLenderAddress',
+  'ConfirmChangeLenderAddress',
+]
+
+const updateCache = async (toBlock) => {
+  while (cache.blockNumber < toBlock) {
+    const fromBlock = cache.blockNumber
+    const untilBlock = Math.min(toBlock, fromBlock + MAX_QUERY_RANGE)
+    const logs = await rocketLend.queryFilter(eventNames, fromBlock, untilBlock)
+    logs.sort((a, b) => a.blockNumber < b.blockNumber ? -1 :
+                        a.blockNumber > b.blockNumber ? +1 :
+                        a.index < b.index ? -1 :
+                        a.index > b.index ? +1 : 0)
     for (const log of logs) {
-      const address = log.args[log.eventName == 'RegisterLender' ? 'address' : 'new']
-      const prevKey = log.args.old?.toLowerCase()
-      const key = address.toLowerCase()
-      const lenderId = log.args.id.toString()
-      lenderIdsByAddress.data[key] ||= {ids: new Set()}
-      const {blockNumber, logIndex, ids} = lenderIdsByAddress.data[key]
-      if ((blockNumber || 0) < log.blockNumber || blockNumber == log.blockNumber && logIndex < log.index) {
-        console.log(`Adding lenderId ${lenderId} to ${address}`)
-        lenderIdsByAddress.data[key].blockNumber = log.blockNumber
-        lenderIdsByAddress.data[key].logIndex = log.index
-        ids.add(lenderId)
-        if (prevKey) {
-          console.log(`Removing lenderId ${lenderId} from ${log.args.old}`)
-          lenderIdsByAddress.data[prevKey].ids.delete(lenderId)
+      if (cache.blockNumber < log.blockNumber ||
+          cache.blockNumber === log.blockNumber &&
+          cache.logIndex < log.index) {
+        cache.blockNumber = log.blockNumber
+        cache.logIndex = log.index
+        switch (log.eventName) {
+          case 'RegisterLender': {
+            const address = log.args.address.toLowerCase()
+            const lenderId = log.args.id.toString()
+            cache.lenderIdsByAddress[address] ||= new Set()
+            console.log(`Adding lenderId ${lenderId} to ${log.args.address}`)
+            cache.lenderIdsByAddress[address].add(lenderId)
+            break
+          }
+          case 'PendingChangeLenderAddress': {
+            const oldAddress = log.args.old.toLowerCase()
+            const newAddress = log.args.new.toLowerCase()
+            const lenderId = log.args.id.toString()
+            cache.pendingLenderIdsByAddress[newAddress] ||= new Set()
+            if (cache.pendingLenderIdsByAddress[oldAddress]) {
+              console.log(`Clearing pending transfer of ${lenderId} to ${log.args.old}`)
+              cache.pendingLenderIdsByAddress[oldAddress].delete(lenderId)
+            }
+            console.log(`Adding pending transfer of ${lenderId} to ${log.args.new}`)
+            cache.pendingLenderIdsByAddress[newAddress].add(lenderId)
+            break
+          }
+          case 'ConfirmChangeLenderAddress': {
+            const oldAddress = log.args.old.toLowerCase()
+            const newAddress = log.args.new.toLowerCase()
+            const oldPending = log.args.oldPending.toLowerCase()
+            const lenderId = log.args.id.toString()
+            cache.lenderIdsByAddress[newAddress] ||= new Set()
+            console.log(`Removing lenderId ${lenderId} from ${log.args.old}`)
+            cache.lenderIdsByAddress[oldAddress].delete(lenderId)
+            console.log(`Adding lenderId ${lenderId} to ${log.args.new}`)
+            cache.lenderIdsByAddress[newAddress].add(lenderId)
+            if (cache.pendingLenderIdsByAddress[oldPending]) {
+              console.log(`Clearing pending transfer of ${lenderId} to ${log.args.old}`)
+              cache.pendingLenderIdsByAddress[oldPending].delete(lenderId)
+            }
+            break
+          }
         }
       }
     }
-    console.log(`Updated lenderIdsByAddress to ${newUntilBlock}`)
-    lenderIdsByAddress.untilBlock = newUntilBlock
   }
+  console.log(`Updated events to ${toBlock}`)
 }
 
-await updateLenderIdsByAddress(await provider.getBlockNumber())
+await updateCache(await provider.getBlockNumber())
 
 provider.on('block', async (blockNumber) => {
-  await updateLenderIdsByAddress(blockNumber)
+  await updateCache(blockNumber)
 })
 
 const addressRe = '0x[0-9a-fA-F]{40}'
@@ -72,9 +110,9 @@ app.use(cors())
 app.get(`/lenderIds/:address(${addressRe})`, async (req, res, next) => {
   try {
     const address = req.params.address.toLowerCase()
-    const {ids} = lenderIdsByAddress.data[address] || {ids: []}
+    const ids = cache.lenderIdsByAddress[address] || []
     return res.status(200).json({
-      untilBlock: lenderIdsByAddress.untilBlock,
+      untilBlock: cache.blockNumber,
       lenderIds: Array.from(ids),
     })
   }
