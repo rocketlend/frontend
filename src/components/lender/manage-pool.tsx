@@ -16,6 +16,13 @@ import {
   Description,
   ErrorMessage,
 } from "../fieldset";
+import {
+  Dialog,
+  DialogActions,
+  DialogBody,
+  DialogDescription,
+  DialogTitle,
+} from "../dialog";
 import { Text } from "../text";
 import { Input } from "../input";
 import { Button } from "../button";
@@ -25,21 +32,40 @@ const QuickViewCard = ({
   name,
   value,
   action,
+  FormComponent,
 }: {
   name: string;
   value: number;
   action: string;
+  FormComponent: () => JSX.Element;
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div className="bg-zinc-800/50 px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-      <p className="text-sm font-medium leading-6 text-zinc-400">{name}</p>
-      <p className="mt-2 flex items-baseline gap-x-2">
-        <span className="text-4xl font-semibold tracking-tight text-white">
-          {value}
-        </span>
-      </p>
-      <Button outline>{action}</Button>
-    </div>
+    <>
+      <div className="bg-zinc-800/50 px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+        <p className="text-sm font-medium leading-6 text-zinc-400">{name}</p>
+        <p className="mt-2 flex items-baseline gap-x-2">
+          <span className="text-4xl font-semibold tracking-tight text-white">
+            {value}
+          </span>
+        </p>
+        <Button outline onClick={() => setIsOpen(true)}>
+          {action}
+        </Button>
+      </div>
+      <Dialog open={isOpen} onClose={setIsOpen}>
+        <DialogBody>
+          <FormComponent />
+        </DialogBody>
+        <DialogActions>
+          <Button plain onClick={() => setIsOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => setIsOpen(false)}>Submit</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
@@ -47,10 +73,30 @@ export const PoolStatsQuickView = () => {
   return (
     <div className="mx-auto max-w-7xl">
       <div className="grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-4">
-        <QuickViewCard name={"Available RPL"} value={mockPoolState.available} action={"Withdraw"} />
-        <QuickViewCard name={"Borrowed RPL"} value={mockPoolState.borrowed} action={"Supply"}/>
-        <QuickViewCard name={"Transfer Allowance"} value={mockPoolState.allowance} action={"Change"} />
-        <QuickViewCard name={"Interest Accrued"} value={mockPoolState.interestPaid} action={"Withdraw"} />
+        <QuickViewCard
+          name={"Available RPL"}
+          value={mockPoolState.available}
+          action={"Withdraw"}
+          FormComponent={WithdrawRPLForm}
+        />
+        <QuickViewCard
+          name={"Borrowed RPL"}
+          value={mockPoolState.borrowed}
+          action={"Supply"}
+          FormComponent={SupplyRPLForm}
+        />
+        <QuickViewCard
+          name={"Transfer Allowance"}
+          value={mockPoolState.allowance}
+          action={"Change"}
+          FormComponent={ChangeAllowanceForm}
+        />
+        <QuickViewCard
+          name={"Interest Accrued"}
+          value={mockPoolState.interestPaid}
+          action={"Withdraw"}
+          FormComponent={WithdrawInterestForm}
+        />
       </div>
     </div>
   );
@@ -182,10 +228,14 @@ export const BorrowerList = ({ borrowers }: { borrowers: string[] }) => {
 };
 
 // probably duplicated in "create lending pool"
-export const SupplyRPLForm = () => {};
+export const SupplyRPLForm = () => {
+  return <></>;
+};
 
 // probably duplicated in "create lending pool"
-export const WithdrawRPLForm = () => {};
+export const WithdrawRPLForm = () => {
+  return <></>;
+};
 
 // TODO indicate current relevant pool info, probably
 export const WithdrawInterestForm = () => {
@@ -263,6 +313,10 @@ export const WithdrawETHForm = () => {
       </Fieldset>
     </form>
   );
+};
+
+const ChangeAllowanceForm = () => {
+  return <></>;
 };
 
 // (maybe) container for all these interfaces
