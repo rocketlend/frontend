@@ -59,7 +59,6 @@ const ChangeAddress = () => {
           </div>
         </FieldGroup>
       </Fieldset>
-      {/*<Button className="cursor-pointer self-center">Submit</Button>*/}
       <TransactionSubmitter
        buttonText="Submit"
        address={rocketLendAddress}

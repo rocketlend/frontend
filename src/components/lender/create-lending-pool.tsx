@@ -16,14 +16,14 @@ import { useAccount } from "wagmi";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import { TransactionSubmitter } from "../TransactionSubmitter";
 import rocketLendABI from "../../rocketlend.abi";
-import { DropIcon } from "./CustomIcons";
+import { DropIcon } from "../CustomIcons";
 
 // NOTE idk if we'll use this, but here it is just in case
 // TODO make it do something
 export const PoolsEmptyStateUI = () => {
   return (
     <button
-      type="button"
+      // type="button"
       className="group relative block w-7/12 rounded-lg bg-zinc-800/30 border border-dashed border-zinc-400/50 p-12 text-center hover:border-zinc-300/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
     >
       <DropIcon className="mx-auto h-12 w-12 text-zinc-400 group-hover:text-zinc-300" />
@@ -160,7 +160,6 @@ const CreateLendingPool = () => {
                     plain
                     type="button"
                     onClick={handleAddAddress}
-                    className="cursor-pointer"
                   >
                     <PlusCircleIcon />
                   </Button>
@@ -180,7 +179,7 @@ const CreateLendingPool = () => {
       </Fieldset>
       <div className="sm:self-end space-x-4">
         {/* TODO make this button clear addresses as well */}
-        <Button type="reset" plain className="cursor-pointer">
+        <Button type="reset" plain>
           Clear
         </Button>
         <TransactionSubmitter

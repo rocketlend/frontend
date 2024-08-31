@@ -1,4 +1,6 @@
 // NOTE: the organization of these components and where they live may change, just sketching them here for now
+// and some of them may eventually be modals/pop-ups
+
 import { useState } from "react";
 import {
   mockPoolState,
@@ -16,16 +18,27 @@ import {
 } from "../fieldset";
 import { Text } from "../text";
 import { Input } from "../input";
+import { Button } from "../button";
+import { PlusCircleIcon, MinusCircleIcon } from "@heroicons/react/24/outline";
 
-const QuickViewCard = ({ name, value }: { name: string; value: number }) => {
+const QuickViewCard = ({
+  name,
+  value,
+  action,
+}: {
+  name: string;
+  value: number;
+  action: string;
+}) => {
   return (
-    <div className="bg-zinc-800/50 px-4 py-6 sm:px-6 lg:px-8">
+    <div className="bg-zinc-800/50 px-4 py-6 sm:px-6 lg:px-8 space-y-6">
       <p className="text-sm font-medium leading-6 text-zinc-400">{name}</p>
       <p className="mt-2 flex items-baseline gap-x-2">
         <span className="text-4xl font-semibold tracking-tight text-white">
           {value}
         </span>
       </p>
+      <Button outline>{action}</Button>
     </div>
   );
 };
@@ -34,10 +47,10 @@ export const PoolStatsQuickView = () => {
   return (
     <div className="mx-auto max-w-7xl">
       <div className="grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-4">
-        <QuickViewCard name={"Available RPL"} value={mockPoolState.available} />
-        <QuickViewCard name={"Borrowed RPL"} value={mockPoolState.borrowed} />
-        <QuickViewCard name={"Allowance"} value={mockPoolState.allowance} />
-        <QuickViewCard name={"Interest"} value={mockPoolState.interestPaid} />
+        <QuickViewCard name={"Available RPL"} value={mockPoolState.available} action={"Withdraw"} />
+        <QuickViewCard name={"Borrowed RPL"} value={mockPoolState.borrowed} action={"Supply"}/>
+        <QuickViewCard name={"Transfer Allowance"} value={mockPoolState.allowance} action={"Change"} />
+        <QuickViewCard name={"Interest Accrued"} value={mockPoolState.interestPaid} action={"Withdraw"} />
       </div>
     </div>
   );
@@ -126,6 +139,16 @@ export const PoolOverview = () => {
                 <BorrowerList borrowers={mockBorrowersState.allowedToBorrow} />
               )}
             </dd>
+            <div className="mt-8 sm:col-span-3 place-self-center flex flex-col sm:flex-row gap-6 sm:gap-12 items-center">
+              <Button outline>
+                <PlusCircleIcon />
+                Add
+              </Button>
+              <Button outline>
+                <MinusCircleIcon />
+                Remove
+              </Button>
+            </div>
           </div>
         </dl>
       </div>
@@ -164,7 +187,7 @@ export const SupplyRPLForm = () => {};
 // probably duplicated in "create lending pool"
 export const WithdrawRPLForm = () => {};
 
-// TODO indicate current relevant pool info, probably 
+// TODO indicate current relevant pool info, probably
 export const WithdrawInterestForm = () => {
   const [withdrawalAmount, setWithdrawalAmount] = useState(0);
   const [resupplyAmount, setResupplyAmount] = useState(0);
@@ -175,6 +198,7 @@ export const WithdrawInterestForm = () => {
   };
 
   // TODO input validation
+  // TODO submit button (will add after taking a closer look at TransactionSubmitter)
   const handleChangeResupplyAmount = (value: string) => {
     setResupplyAmount(Number(value));
   };
@@ -183,6 +207,7 @@ export const WithdrawInterestForm = () => {
     <form className="sm:max-w-xs rounded-xl p-6 border border-zinc-800 bg-zinc-800/40">
       <Fieldset>
         <Legend>Withdraw RPL interest</Legend>
+        {/* TODO display amount available */}
         <FieldGroup>
           <Field>
             <Label>Total amount to withdraw</Label>
@@ -212,5 +237,33 @@ export const WithdrawInterestForm = () => {
   );
 };
 
-// (maybe) page container for all these interfaces
+// TODO submit button (will add after taking a closer look at TransactionSubmitter)
+export const WithdrawETHForm = () => {
+  const [withdrawalAmount, setWithdrawalAmount] = useState(0);
+
+  // TODO input validation
+  const handleChangeWithdrawalAmount = (value: string) => {
+    setWithdrawalAmount(Number(value));
+  };
+
+  return (
+    <form className="sm:max-w-xs rounded-xl p-6 border border-zinc-800 bg-zinc-800/40">
+      <Fieldset>
+        <Legend>Withdraw ETH</Legend>
+        {/* TODO display amount available */}
+        <Field>
+          <Label>Amount to withdraw</Label>
+          <Input
+            type="number"
+            name="withdrawal_amount"
+            value={withdrawalAmount}
+            onChange={(e) => handleChangeWithdrawalAmount(e.target.value)}
+          />
+        </Field>
+      </Fieldset>
+    </form>
+  );
+};
+
+// (maybe) container for all these interfaces
 export const ManagePool = () => {};

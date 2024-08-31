@@ -61,7 +61,7 @@ const Home: NextPage = () => {
         for use on <a href="https://rocketpool.net">Rocket Pool</a> nodes.
       </p>
 
-      <div className="divide-y divide-gray-200 overflow-hidden rounded-lg bg-transparent shadow sm:grid sm:grid-cols-2 sm:gap-px sm:divide-y-0">
+      <div className="overflow-hidden rounded-lg bg-transparent shadow grid sm:grid-cols-2 gap-px">
         {infoCards.map((card, index) => {
           return (
             <Link key={index} href={card.href}>
