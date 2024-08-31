@@ -23,6 +23,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "../dialog";
+import { DescriptionList, DescriptionDetails, DescriptionTerm } from "../description-list";
 import { Text } from "../text";
 import { Input } from "../input";
 import { Button } from "../button";
@@ -55,7 +56,7 @@ const QuickViewCard = ({
         </Button>
       </div>
       <Dialog open={isOpen} onClose={setIsOpen}>
-        <DialogBody>
+        <DialogBody className="flex justify-center">
           <FormComponent />
         </DialogBody>
         <DialogActions>
@@ -111,10 +112,10 @@ const PoolOverviewItem = ({
 }) => {
   return (
     <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-      <dt className="text-sm font-medium leading-6 text-white">{name}</dt>
-      <dd className="mt-1 text-sm leading-6 text-zinc-400 sm:col-span-2 sm:mt-0">
+      <DescriptionTerm className="text-sm font-medium leading-6 text-white">{name}</DescriptionTerm>
+      <DescriptionDetails className="mt-1 text-sm leading-6 text-zinc-400 sm:col-span-2 sm:mt-0">
         {value}
-      </dd>
+      </DescriptionDetails>
     </div>
   );
 };
@@ -133,7 +134,7 @@ export const PoolOverview = () => {
         </p>
       </div>
       <div className="mt-6 border-t border-white/10">
-        <dl className="divide-y divide-white/10">
+        <DescriptionList className="divide-y divide-white/10">
           <PoolOverviewItem
             name="Interest Rate"
             value={`${mockPoolParams.interestRate}%`}
@@ -164,19 +165,19 @@ export const PoolOverview = () => {
           />
 
           <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt className="text-sm font-medium leading-6 text-white">
+            <DescriptionTerm className="text-sm font-medium leading-6 text-white">
               Current Borrowers
-            </dt>
-            <dd className="mt-2 text-sm text-white sm:col-span-2 sm:mt-0">
+            </DescriptionTerm>
+            <DescriptionDetails className="mt-2 text-sm text-white sm:col-span-full sm:mt-0">
               <BorrowerList borrowers={mockBorrowersState.borrowers} />
-            </dd>
+            </DescriptionDetails>
           </div>
 
-          <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <dt className="text-sm font-medium leading-6 text-white">
+          <div className="px-4 py-6 col-span-full sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+            <DescriptionTerm className="text-sm font-medium leading-6 text-white">
               Allowed Borrowers
-            </dt>
-            <dd className="mt-2 text-sm text-white sm:col-span-2 sm:mt-0">
+            </DescriptionTerm>
+            <DescriptionDetails className="mt-2 text-sm text-white sm:col-span-2 sm:mt-0">
               {mockBorrowersState.allowedToBorrow.length === 0 ? (
                 <span className="text-zinc-400 py-4 pl-4 pr-5 text-sm leading-6">
                   All borrowers are currently allowed for this pool.
@@ -184,7 +185,7 @@ export const PoolOverview = () => {
               ) : (
                 <BorrowerList borrowers={mockBorrowersState.allowedToBorrow} />
               )}
-            </dd>
+            </DescriptionDetails>
             <div className="mt-8 sm:col-span-3 place-self-center flex flex-col sm:flex-row gap-6 sm:gap-12 items-center">
               <Button outline>
                 <PlusCircleIcon />
@@ -196,7 +197,7 @@ export const PoolOverview = () => {
               </Button>
             </div>
           </div>
-        </dl>
+        </DescriptionList>
       </div>
     </div>
   );
@@ -254,7 +255,7 @@ export const WithdrawInterestForm = () => {
   };
 
   return (
-    <form className="sm:max-w-xs rounded-xl p-6 border border-zinc-800 bg-zinc-800/40">
+    <form className="sm:max-w-xs rounded-xl">
       <Fieldset>
         <Legend>Withdraw RPL interest</Legend>
         {/* TODO display amount available */}
@@ -269,7 +270,7 @@ export const WithdrawInterestForm = () => {
             />
           </Field>
           <Field>
-            <Label>Resupply amount</Label>
+            <Label>Amount to resupply</Label>
             <Description className="font-thin">
               Of the total withdrawal amount above, indicate here how much you'd
               like to resupply to the pool.
@@ -297,7 +298,7 @@ export const WithdrawETHForm = () => {
   };
 
   return (
-    <form className="sm:max-w-xs rounded-xl p-6 border border-zinc-800 bg-zinc-800/40">
+    <form className="sm:max-w-xs rounded-xl">
       <Fieldset>
         <Legend>Withdraw ETH</Legend>
         {/* TODO display amount available */}

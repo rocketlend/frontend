@@ -8,7 +8,6 @@ const Page: NextPage = () => {
     <div className="space-y-20">
       <PoolStatsQuickView />
       <PoolOverview />
-      <WithdrawInterestForm />
       <PoolsEmptyStateUI />
     </div>
   )
