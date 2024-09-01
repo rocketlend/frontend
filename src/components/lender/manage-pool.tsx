@@ -1,6 +1,4 @@
 // NOTE: the organization of these components and where they live may change, just sketching them here for now
-// and some of them may eventually be modals/pop-ups
-
 import { useState } from "react";
 import {
   mockPoolState,
@@ -16,18 +14,20 @@ import {
   Description,
   ErrorMessage,
 } from "../fieldset";
+import { Dialog, DialogActions, DialogBody } from "../dialog";
 import {
-  Dialog,
-  DialogActions,
-  DialogBody,
-  DialogDescription,
-  DialogTitle,
-} from "../dialog";
-import { DescriptionList, DescriptionDetails, DescriptionTerm } from "../description-list";
-import { Text } from "../text";
+  DescriptionList,
+  DescriptionDetails,
+  DescriptionTerm,
+} from "../description-list";
 import { Input } from "../input";
 import { Button } from "../button";
-import { PlusCircleIcon, MinusCircleIcon } from "@heroicons/react/24/outline";
+import {
+  PlusCircleIcon,
+  MinusCircleIcon,
+  Cog8ToothIcon,
+} from "@heroicons/react/24/outline";
+import { NULL_ADDRESS } from "../../constants";
 
 const QuickViewCard = ({
   name,
@@ -44,10 +44,12 @@ const QuickViewCard = ({
 
   return (
     <>
-      <div className="bg-zinc-800/50 px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-        <p className="text-sm font-medium leading-6 text-zinc-400">{name}</p>
+      <div className="bg-zinc-800/50 p-4 sm:p-5 md:p-6 space-y-6 rounded-lg">
+        <p className="text-xs sm:text-sm font-medium leading-6 text-zinc-400">
+          {name}
+        </p>
         <p className="mt-2 flex items-baseline gap-x-2">
-          <span className="text-4xl font-semibold tracking-tight text-white">
+          <span className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight text-white">
             {value}
           </span>
         </p>
@@ -73,7 +75,7 @@ const QuickViewCard = ({
 export const PoolStatsQuickView = () => {
   return (
     <div className="mx-auto max-w-7xl">
-      <div className="grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 md:gap-4 md:grid-cols-4">
         <QuickViewCard
           name={"Available RPL"}
           value={mockPoolState.available}
@@ -111,75 +113,69 @@ const PoolOverviewItem = ({
   value: number | string;
 }) => {
   return (
-    <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-      <DescriptionTerm className="text-sm font-medium leading-6 text-white">{name}</DescriptionTerm>
-      <DescriptionDetails className="mt-1 text-sm leading-6 text-zinc-400 sm:col-span-2 sm:mt-0">
-        {value}
-      </DescriptionDetails>
+    <div className="px-4 py-6 sm:gap-4 sm:px-0 border-t border-white/10">
+      <DescriptionTerm>{name}</DescriptionTerm>
+      <DescriptionDetails>{value}</DescriptionDetails>
     </div>
   );
 };
 
-// TODO see if it works to replace with TailwindUI description list components
 // TODO refactor
 export const PoolOverview = () => {
   return (
-    <div className="max-w-screen-md mx-auto">
+    <div className="max-w-screen-md mx-auto bg-zinc-800/20 p-12 rounded-xl border border-zinc-800/50">
       <div className="px-4 sm:px-0">
-        <h3 className="text-base font-semibold leading-7 text-white">
-          {"[Pool Identifier]"}
-        </h3>
-        <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-400">
-          Pool parameters and current state.
-        </p>
+        <h2 className="mt-1 max-w-2xl text-lg leading-6 text-zinc-400">
+          Pool parameters and current state
+        </h2>
       </div>
-      <div className="mt-6 border-t border-white/10">
-        <DescriptionList className="divide-y divide-white/10">
+      <div className="mt-6">
+        <DescriptionList className="divide-y-reverse divide-white/10">
           <PoolOverviewItem
-            name="Interest Rate"
+            name="Interest Rate:"
             value={`${mockPoolParams.interestRate}%`}
           />
           <PoolOverviewItem
-            name="Accounted Until"
+            name="Accounted Until:"
             value={mockPoolParams.endTime}
           />
           <PoolOverviewItem
-            name="Available RPL"
+            name="Available RPL:"
             value={mockPoolState.available}
           />
           <PoolOverviewItem
-            name="Borrowed RPL"
+            name="Borrowed RPL:"
             value={mockPoolState.borrowed}
           />
           <PoolOverviewItem
-            name="Transfer Allowance"
+            name="Transfer Allowance:"
             value={`${mockPoolState.allowance} RPL`}
           />
           <PoolOverviewItem
-            name="Interest Accrued"
+            name="Interest Accrued:"
             value={mockPoolState.interestPaid}
           />
           <PoolOverviewItem
-            name="ETH Balance"
+            name="ETH Balance:"
             value={mockPoolState.reclaimed}
           />
 
-          <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <DescriptionTerm className="text-sm font-medium leading-6 text-white">
-              Current Borrowers
+          <div className="px-4 py-6 sm:px-0 border-t border-white/10">
+            <DescriptionTerm className="font-medium leading-6 text-white">
+              Current Borrowers:
             </DescriptionTerm>
-            <DescriptionDetails className="mt-2 text-sm text-white sm:col-span-full sm:mt-0">
+            <DescriptionDetails className="mt-2 text-white sm:col-span-full sm:mt-0">
               <BorrowerList borrowers={mockBorrowersState.borrowers} />
             </DescriptionDetails>
           </div>
 
-          <div className="px-4 py-6 col-span-full sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
-            <DescriptionTerm className="text-sm font-medium leading-6 text-white">
-              Allowed Borrowers
+          <div className="px-4 py-6 col-span-full sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0 border-t border-white/10">
+            <DescriptionTerm className="font-medium leading-6 text-white">
+              Allowed Borrowers:
             </DescriptionTerm>
-            <DescriptionDetails className="mt-2 text-sm text-white sm:col-span-2 sm:mt-0">
-              {mockBorrowersState.allowedToBorrow.length === 0 ? (
-                <span className="text-zinc-400 py-4 pl-4 pr-5 text-sm leading-6">
+            <DescriptionDetails className="mt-2 text-white sm:col-span-2 sm:mt-0">
+              {mockBorrowersState.allowedToBorrow[0] === NULL_ADDRESS ? (
+                <span className="text-zinc-400 py-4 leading-6">
                   All borrowers are currently allowed for this pool.
                 </span>
               ) : (
@@ -187,14 +183,23 @@ export const PoolOverview = () => {
               )}
             </DescriptionDetails>
             <div className="mt-8 sm:col-span-3 place-self-center flex flex-col sm:flex-row gap-6 sm:gap-12 items-center">
-              <Button outline>
-                <PlusCircleIcon />
-                Add
-              </Button>
-              <Button outline>
-                <MinusCircleIcon />
-                Remove
-              </Button>
+              {mockBorrowersState.allowedToBorrow[0] === NULL_ADDRESS ? (
+                <Button outline>
+                  <Cog8ToothIcon />
+                  Change settings
+                </Button>
+              ) : (
+                <>
+                  <Button outline>
+                    <PlusCircleIcon />
+                    Add
+                  </Button>
+                  <Button outline>
+                    <MinusCircleIcon />
+                    Remove
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </DescriptionList>
@@ -213,7 +218,7 @@ export const BorrowerList = ({ borrowers }: { borrowers: string[] }) => {
         return (
           <li
             key={idx}
-            className="flex items-center justify-between py-4 pl-4 pr-5 text-sm leading-6"
+            className="flex items-center justify-between py-4 pl-4 pr-5 leading-6"
           >
             <div className="flex w-0 flex-1 items-center">
               <div className="ml-4 flex min-w-0 flex-1 gap-2">
@@ -230,12 +235,30 @@ export const BorrowerList = ({ borrowers }: { borrowers: string[] }) => {
 
 // probably duplicated in "create lending pool"
 export const SupplyRPLForm = () => {
-  return <></>;
+  return (
+    <form>
+      <Fieldset>
+        <Legend>Supply RPL</Legend>
+        {/* TODO display amount available */}
+      </Fieldset>
+    </form>
+  );
 };
 
 // probably duplicated in "create lending pool"
 export const WithdrawRPLForm = () => {
-  return <></>;
+  return (
+    <form>
+      <Fieldset>
+        <Legend>Withdraw RPL</Legend>
+        {/* TODO display amount available */}
+        <Field>
+          <Label>Amount to withdraw</Label>
+          <Input type="number" />
+        </Field>
+      </Fieldset>
+    </form>
+  );
 };
 
 // TODO indicate current relevant pool info, probably
@@ -317,8 +340,33 @@ export const WithdrawETHForm = () => {
 };
 
 const ChangeAllowanceForm = () => {
-  return <></>;
+  const [newAllowance, setNewAllowance] = useState(0); // TODO this should initially be the current allowance amount
+
+  return (
+    <form>
+      <Fieldset>
+        <Legend>Change transfer allowance</Legend>
+        {/* TODO display amount available */}
+        <Field>
+          <Label>New allowance</Label>
+          <Input
+            type="number"
+            name="new_allowance"
+            value={newAllowance}
+            onChange={(e) => setNewAllowance(Number(e.target.value))}
+          />
+        </Field>
+      </Fieldset>
+    </form>
+  );
 };
 
 // (maybe) container for all these interfaces
-export const ManagePool = () => {};
+export const ManagePool = () => {
+  return (
+    <>
+      <PoolStatsQuickView />
+      <PoolOverview />
+    </>
+  );
+};

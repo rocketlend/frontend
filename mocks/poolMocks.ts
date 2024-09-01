@@ -1,3 +1,5 @@
+import { NULL_ADDRESS } from "../src/constants";
+
 export const mockPoolState: { [key: string]: number } = {
   available: 4542.5436,
   borrowed: 625.5876,
@@ -12,7 +14,7 @@ export const mockBorrowersState = {
     'twuioawgjfdlbknvcnbkldfg',
     'ghelreahurtiraehgilhgdjk',
   ],
-  allowedToBorrow: [], // "everyone is allowed"
+  allowedToBorrow: [NULL_ADDRESS], // "everyone is allowed"
 };
 
 export const mockPoolParams = {

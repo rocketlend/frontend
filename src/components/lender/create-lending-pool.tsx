@@ -17,6 +17,7 @@ import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import { TransactionSubmitter } from "../TransactionSubmitter";
 import rocketLendABI from "../../rocketlend.abi";
 import { DropIcon } from "../CustomIcons";
+import { NULL_ADDRESS } from "../../constants";
 
 // NOTE idk if we'll use this, but here it is just in case
 // TODO make it do something
@@ -33,8 +34,6 @@ export const PoolsEmptyStateUI = () => {
     </button>
   );
 };
-
-const NULL_ADDRESS = "0x".padEnd(42, "0");
 
 const CreateLendingPool = () => {
   // QUESTION should these be declared BigInts or converted when preparing the transaction?
