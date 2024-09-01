@@ -20,6 +20,7 @@ import {
   DescriptionDetails,
   DescriptionTerm,
 } from "../description-list";
+import { Switch, SwitchGroup, SwitchField } from "../switch";
 import { Input } from "../input";
 import { Button } from "../button";
 import {
@@ -361,6 +362,14 @@ const ChangeAllowanceForm = () => {
   );
 };
 
+const ChangeAllowedBorrowersForm = () => {
+  return (
+    <form>
+      TODO
+    </form>
+  );
+};
+
 // (maybe) container for all these interfaces
 export const ManagePool = () => {
   return (
@@ -368,5 +377,47 @@ export const ManagePool = () => {
       <PoolStatsQuickView />
       <PoolOverview />
     </>
+  );
+};
+
+const actions = [
+  { FormComponent: WithdrawRPLForm, title: "Withdraw RPL" },
+  { FormComponent: SupplyRPLForm, title: "Supply RPL" },
+  { FormComponent: WithdrawInterestForm, title: "Withdraw interest" },
+  { FormComponent: ChangeAllowanceForm, title: "Change transfer allowance" },
+  {
+    FormComponent: ChangeAllowedBorrowersForm,
+    title: "Change allowed borrowers list",
+  },
+];
+
+export const EditPoolForm = () => {
+  const [visible, setVisible] = useState(Array(actions.length).fill(false));
+
+  const handleShowFormSection = (idx: number) => {
+    const newVisible = [...visible];
+    newVisible[idx] = !newVisible[idx];
+    setVisible(newVisible);
+  };
+
+  return (
+    <Fieldset>
+      {actions.map(({ FormComponent, title }, idx) => {
+        return (
+          <div key={idx}>
+            <SwitchGroup>
+              <Field>
+                <Switch onChange={() => handleShowFormSection(idx)} />
+                <Label>{title}</Label>
+              </Field>
+            </SwitchGroup>
+            <div className={visible[idx] || "sr-only"}>
+              <FormComponent />
+            </div>
+          </div>
+        );
+      })}
+      <Button>Submit</Button>
+    </Fieldset>
   );
 };
