@@ -1,7 +1,6 @@
 // NOTE: not a real page! temporary for UI development convenience
 import { NextPage } from "next";
-import { EditPoolForm, ManagePool } from "../components/lender/manage-pool";
-import { PoolsEmptyStateUI } from "../components/lender/create-lending-pool";
+import { EditPoolForm } from "../components/lender/pool-forms";
 
 const Page: NextPage = () => {
   return (
