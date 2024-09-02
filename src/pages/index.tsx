@@ -42,8 +42,8 @@ const infoCards = [
     href: "/docs",
     content: ["How Rocket Lend works."],
     icon: BookOpenIcon,
-    iconForeground: "text-teal-700",
-    iconBackground: "bg-teal-100",
+    iconForeground: "text-purple-700",
+    iconBackground: "bg-purple-100",
   },
 ];
 
@@ -54,31 +54,39 @@ const Home: NextPage = () => {
 
       <p className={"text-xl text-center my-12 mx-auto max-w-lg leading-8"}>
         The immutable protocol for borrowing and lending staked{" "}
-        <a href="https://etherscan.io/address/0xd33526068d116ce69f19a9ee46f0bd304f21a51f">
+        <Link
+          target="_blank"
+          href="https://etherscan.io/address/0xd33526068d116ce69f19a9ee46f0bd304f21a51f"
+          className="text-amber-500 rounded-sm"
+        >
           RPL
-        </a>{" "}
-        for use on <a href="https://rocketpool.net">Rocket Pool</a> nodes.
+        </Link>{" "}
+        for use on{" "}
+        <Link href="https://rocketpool.net" className="text-amber-500 rounded-sm">
+          Rocket Pool
+        </Link>{" "}
+        nodes.
       </p>
 
-      <div className="overflow-hidden rounded-lg bg-transparent shadow grid sm:grid-cols-2 gap-px">
+      <div className="rounded-lg bg-transparent shadow grid sm:grid-cols-2 gap-2">
         {infoCards.map((card, index) => {
           return (
-            <Link key={index} href={card.href}>
-              <div
-                className={classNames(
-                  index === 0
-                    ? "rounded-tl-lg rounded-tr-lg sm:rounded-tr-none"
-                    : "",
-                  index === 1 ? "sm:rounded-tr-lg" : "",
-                  index === infoCards.length - 2 ? "sm:rounded-bl-lg" : "",
-                  index === infoCards.length - 1
-                    ? "rounded-bl-lg rounded-br-lg sm:rounded-bl-none"
-                    : "",
-                  "group relative bg-zinc-700/50  p-6 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500"
-                )}
-              >
+            <Link
+              key={index}
+              href={card.href}
+              className={classNames(
+                index === 0
+                  ? "rounded-tl-lg rounded-tr-lg sm:rounded-tr-none"
+                  : "",
+                index === 1 ? "sm:rounded-tr-lg" : "",
+                index === infoCards.length - 2 ? "sm:rounded-bl-lg" : "",
+                index === infoCards.length - 1
+                  ? "rounded-bl-lg rounded-br-lg sm:rounded-bl-none"
+                  : "",
+                "group relative bg-zinc-800/50 p-6"
+              )}
+            >
                 <Card card={card} />
-              </div>
             </Link>
           );
         })}

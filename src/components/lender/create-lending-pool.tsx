@@ -25,7 +25,7 @@ export const PoolsEmptyStateUI = () => {
   return (
     <button
       // type="button"
-      className="group relative block w-7/12 rounded-lg bg-zinc-800/30 border border-dashed border-zinc-400/50 p-12 text-center hover:border-zinc-300/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+      className="group relative block w-7/12 rounded-lg bg-zinc-800/30 border border-dashed border-zinc-400/50 p-12 text-center hover:border-zinc-300/50"
     >
       <DropIcon className="mx-auto h-12 w-12 text-zinc-400 group-hover:text-zinc-300" />
       <span className="mt-2 block text-sm font-semibold text-zinc-400 group-hover:text-zinc-300">
