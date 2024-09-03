@@ -3,6 +3,7 @@ import { NextPage } from "next";
 import { EditPoolForm } from "../components/lender/pool-forms";
 import { ManagePool } from "../components/lender/manage-pool";
 import { PoolsEmptyStateUI } from "../components/lender/create-lending-pool";
+import ExplorerTable from "../components/explorer/explorer-table";
 
 const Page: NextPage = () => {
   return (
@@ -11,6 +12,7 @@ const Page: NextPage = () => {
       <ManagePool />
       <EditPoolForm />
       <PoolsEmptyStateUI />
+      <ExplorerTable />
     </div>
   )
 };
