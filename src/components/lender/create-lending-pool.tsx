@@ -25,10 +25,10 @@ export const PoolsEmptyStateUI = () => {
   return (
     <button
       // type="button"
-      className="group relative block w-7/12 rounded-lg bg-zinc-800/30 border border-dashed border-zinc-400/50 p-12 text-center hover:border-zinc-300/50"
+      className="group relative block w-7/12 rounded-lg bg-zinc-100/70 dark:bg-zinc-800/30 border border-dashed border-zinc-400/50 p-12 text-center hover:border-zinc-400 dark:hover:border-zinc-300/50"
     >
-      <DropIcon className="mx-auto h-12 w-12 text-zinc-400 group-hover:text-zinc-300" />
-      <span className="mt-2 block text-sm font-semibold text-zinc-400 group-hover:text-zinc-300">
+      <DropIcon className="mx-auto h-12 w-12 text-zinc-400 group-hover:text-zinc-500/90 dark:group-hover:text-zinc-300" />
+      <span className="mt-2 block text-sm font-semibold text-zinc-400 group-hover:text-zinc-500/90 dark:group-hover:text-zinc-300">
         Create a new lending pool
       </span>
     </button>

@@ -28,9 +28,7 @@ export const WithdrawInterestForm = () => {
   };
 
   return (
-    <form className="sm:max-w-xs rounded-xl">
       <Fieldset>
-        <Legend>Withdraw RPL interest</Legend>
         {/* TODO display amount available */}
         <FieldGroup>
           <Field>
@@ -57,35 +55,29 @@ export const WithdrawInterestForm = () => {
           </Field>
         </FieldGroup>
       </Fieldset>
-    </form>
   );
 };
 
 // probably duplicated in "create lending pool"
 export const SupplyRPLForm = () => {
   return (
-    <form className="sm:max-w-xs rounded-xl">
       <Fieldset>
-        <Legend>Supply RPL</Legend>
+        TODO
         {/* TODO display amount available */}
       </Fieldset>
-    </form>
   );
 };
 
 // probably duplicated in "create lending pool"
 export const WithdrawRPLForm = () => {
   return (
-    <form className="sm:max-w-xs rounded-xl">
       <Fieldset>
-        <Legend>Withdraw RPL</Legend>
         {/* TODO display amount available */}
         <Field>
           <Label>Amount to withdraw</Label>
           <Input type="number" />
         </Field>
       </Fieldset>
-    </form>
   );
 };
 
@@ -99,9 +91,7 @@ export const WithdrawETHForm = () => {
   };
 
   return (
-    <form className="sm:max-w-xs rounded-xl">
       <Fieldset>
-        <Legend>Withdraw ETH</Legend>
         {/* TODO display amount available */}
         <Field>
           <Label>Amount to withdraw</Label>
@@ -113,7 +103,6 @@ export const WithdrawETHForm = () => {
           />
         </Field>
       </Fieldset>
-    </form>
   );
 };
 
@@ -121,9 +110,7 @@ export const ChangeAllowanceForm = () => {
   const [newAllowance, setNewAllowance] = useState(0); // TODO this should initially be the current allowance amount
 
   return (
-    <form className="sm:max-w-xs rounded-xl">
       <Fieldset>
-        <Legend>Change transfer allowance</Legend>
         {/* TODO display amount available */}
         <Field>
           <Label>New allowance</Label>
@@ -135,12 +122,15 @@ export const ChangeAllowanceForm = () => {
           />
         </Field>
       </Fieldset>
-    </form>
   );
 };
 
 export const ChangeAllowedBorrowersForm = () => {
-  return <form className="sm:max-w-xs rounded-xl">TODO</form>;
+  return (
+    <Fieldset>
+      TODO
+    </Fieldset>
+  )
 };
 
 const actions = [
@@ -164,7 +154,7 @@ export const EditPoolForm = () => {
   };
 
   return (
-    <Fieldset className="space-y-4">
+    <form className="sm:max-w-xs rounded-xl space-y-4">
       {actions.map(({ FormComponent, title }, idx) => {
         return (
           <div key={idx}>
@@ -181,6 +171,6 @@ export const EditPoolForm = () => {
         );
       })}
       <Button>Review & Submit</Button>
-    </Fieldset>
+    </form>
   );
 };

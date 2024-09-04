@@ -40,12 +40,12 @@ const QuickViewCard = ({
 
   return (
     <>
-      <div className="bg-zinc-800/50 p-4 sm:p-5 md:p-6 space-y-6 rounded-lg">
-        <p className="text-xs sm:text-sm font-medium leading-6 text-zinc-400">
+      <div className="bg-zinc-200/40 dark:bg-zinc-800/50 p-4 sm:p-5 md:p-6 space-y-6 rounded-lg">
+        <p className="text-xs sm:text-sm font-medium leading-6">
           {name}
         </p>
         <p className="mt-2 flex items-baseline gap-x-2">
-          <span className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight text-white">
+          <span className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">
             {value}
           </span>
         </p>
@@ -109,7 +109,7 @@ const PoolOverviewItem = ({
   value: number | string;
 }) => {
   return (
-    <div className="px-4 py-6 sm:gap-4 sm:px-0 border-t border-white/10">
+    <div className="px-4 py-6 sm:gap-4 sm:px-0 border-t border-zinc-200/60 dark:border-white/10">
       <DescriptionTerm>{name}</DescriptionTerm>
       <DescriptionDetails>{value}</DescriptionDetails>
     </div>
@@ -119,14 +119,14 @@ const PoolOverviewItem = ({
 // TODO refactor
 export const PoolOverview = () => {
   return (
-    <div className="max-w-screen-md mx-auto bg-zinc-800/20 p-12 rounded-xl border border-zinc-800/50">
+    <div className="max-w-screen-md mx-auto bg-zinc-100/50 dark:bg-zinc-800/20 p-12 rounded-xl border border-zinc-200/70 dark:border-zinc-800/50">
       <div className="px-4 sm:px-0">
         <h2 className="mt-1 max-w-2xl text-lg leading-6 text-zinc-400">
           Pool parameters and current state
         </h2>
       </div>
       <div className="mt-6">
-        <DescriptionList className="divide-y-reverse divide-white/10">
+        <DescriptionList className="divide-y-reverse divide-zinc-200/60 dark:divide-white/10">
           <PoolOverviewItem
             name="Interest Rate:"
             value={`${mockPoolParams.interestRate}%`}

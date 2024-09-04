@@ -11,9 +11,9 @@ export const DropIcon = ({ className }: { className: string }) => {
       <g
         id="Page-1"
         stroke="currentColor"
-        stroke-width="1"
+        strokeWidth="1"
         fill="none"
-        fill-rule="evenodd"
+        fillRule="evenodd"
       >
         <g id="Group-2">
           <path
@@ -26,7 +26,7 @@ export const DropIcon = ({ className }: { className: string }) => {
             x2="29"
             y2="60.8363408"
             id="Line"
-            stroke-linecap="square"
+            strokeLinecap="square"
           ></line>
           <line
             x1="20"
@@ -34,7 +34,7 @@ export const DropIcon = ({ className }: { className: string }) => {
             x2="38"
             y2="51.8363408"
             id="Line-2"
-            stroke-linecap="square"
+            strokeLinecap="square"
           ></line>
         </g>
       </g>

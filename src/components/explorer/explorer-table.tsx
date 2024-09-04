@@ -21,7 +21,7 @@ import { poolData } from "../../../mocks/explorerMocks";
 const ExplorerTable = () => {
   return (
     <>
-      <Table>
+      <Table className="p-10 rounded-lg bg-zinc-100/50 dark:bg-zinc-800/20 border border-zinc-200/70 dark:border-zinc-800/50">
         <TableHead>
           <TableRow>
             <TableHeader>Address</TableHeader>
