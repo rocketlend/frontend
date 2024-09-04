@@ -67,7 +67,7 @@ const Home: NextPage = () => {
         nodes.
       </p>
 
-      <div className="rounded-lg bg-transparent grid sm:grid-cols-2 gap-2 max-w-screen-lg mx-auto">
+      <div className="rounded-lg bg-transparent grid sm:grid-cols-2 gap-2 max-w-xs sm:max-w-screen-lg mx-auto">
         {infoCards.map((card, index) => {
           return (
             <Link
