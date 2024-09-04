@@ -43,7 +43,7 @@ const Layout: FC<{ children: ReactNode }> = ({ children }) => {
   const { asPath } = useRouter();
 
   return (
-    <>
+    <div className="text-zinc-900 dark:text-zinc-50">
       <StackedLayout
         navbar={
           <Navbar>
@@ -73,7 +73,12 @@ const Layout: FC<{ children: ReactNode }> = ({ children }) => {
             </NavbarSection>
             <NavbarSpacer />
             <NavbarSection>
-              <ConnectButton />
+              <ConnectButton
+                accountStatus={{
+                  smallScreen: "avatar",
+                  largeScreen: "full",
+                }}
+              />
             </NavbarSection>
           </Navbar>
         }
@@ -106,7 +111,7 @@ const Layout: FC<{ children: ReactNode }> = ({ children }) => {
         {children}
       </StackedLayout>
       {/* TODO footer */}
-    </>
+    </div>
   );
 };
 export default Layout;

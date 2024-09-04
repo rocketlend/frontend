@@ -64,7 +64,7 @@ export const WithdrawInterestForm = () => {
 // probably duplicated in "create lending pool"
 export const SupplyRPLForm = () => {
   return (
-    <form>
+    <form className="sm:max-w-xs rounded-xl">
       <Fieldset>
         <Legend>Supply RPL</Legend>
         {/* TODO display amount available */}
@@ -76,7 +76,7 @@ export const SupplyRPLForm = () => {
 // probably duplicated in "create lending pool"
 export const WithdrawRPLForm = () => {
   return (
-    <form>
+    <form className="sm:max-w-xs rounded-xl">
       <Fieldset>
         <Legend>Withdraw RPL</Legend>
         {/* TODO display amount available */}
@@ -121,7 +121,7 @@ export const ChangeAllowanceForm = () => {
   const [newAllowance, setNewAllowance] = useState(0); // TODO this should initially be the current allowance amount
 
   return (
-    <form>
+    <form className="sm:max-w-xs rounded-xl">
       <Fieldset>
         <Legend>Change transfer allowance</Legend>
         {/* TODO display amount available */}
@@ -140,7 +140,7 @@ export const ChangeAllowanceForm = () => {
 };
 
 export const ChangeAllowedBorrowersForm = () => {
-  return <form>TODO</form>;
+  return <form className="sm:max-w-xs rounded-xl">TODO</form>;
 };
 
 const actions = [
@@ -164,23 +164,23 @@ export const EditPoolForm = () => {
   };
 
   return (
-    <Fieldset>
+    <Fieldset className="space-y-4">
       {actions.map(({ FormComponent, title }, idx) => {
         return (
           <div key={idx}>
             <SwitchGroup>
               <Field>
                 <Switch onChange={() => handleShowFormSection(idx)} />
-                <Label>{title}</Label>
+                <Label className="ml-3">{title}</Label>
               </Field>
             </SwitchGroup>
-            <div className={visible[idx] || "sr-only"}>
+            <div className={`${visible[idx] || "sr-only"} mb-14 mt-4`}>
               <FormComponent />
             </div>
           </div>
         );
       })}
-      <Button>Submit</Button>
+      <Button>Review & Submit</Button>
     </Fieldset>
   );
 };

@@ -13,7 +13,7 @@ const infoCards = [
   {
     title: "Lend RPL to be Staked",
     href: "/lender",
-    content: ["Get started as a Lender!", "Earn interest on your RPL."],
+    content: ["Get started as a Lender! Earn interest on your RPL."],
     icon: RocketLaunchIcon,
     iconForeground: "text-orange-700",
     iconBackground: "bg-orange-100",
@@ -22,8 +22,7 @@ const infoCards = [
     title: "Borrow RPL for your Node",
     href: "/borrower",
     content: [
-      "Get RPL to stake on Rocket Pool!",
-      "No extra collateral required.",
+      "Get RPL to stake on Rocket Pool! No extra collateral required.",
     ],
     icon: BanknotesIcon,
     iconForeground: "text-green-700",
@@ -50,9 +49,9 @@ const infoCards = [
 const Home: NextPage = () => {
   return (
     <>
-      <h1 className={"text-4xl text-center my-16"}>Welcome to Rocket Lend!</h1>
+      <h1 className={"text-2xl sm:text-3xl md:text-4xl text-center my-16"}>Welcome to Rocket Lend!</h1>
 
-      <p className={"text-xl text-center my-12 mx-auto max-w-lg leading-8"}>
+      <p className={"text-lg sm:text-xl md:text-2xl font-light text-center my-12 mx-auto max-w-xl"}>
         The immutable protocol for borrowing and lending staked{" "}
         <Link
           target="_blank"
@@ -68,7 +67,7 @@ const Home: NextPage = () => {
         nodes.
       </p>
 
-      <div className="rounded-lg bg-transparent shadow grid sm:grid-cols-2 gap-2">
+      <div className="rounded-lg bg-transparent grid sm:grid-cols-2 gap-2 max-w-screen-lg mx-auto">
         {infoCards.map((card, index) => {
           return (
             <Link
@@ -83,7 +82,7 @@ const Home: NextPage = () => {
                 index === infoCards.length - 1
                   ? "rounded-bl-lg rounded-br-lg sm:rounded-bl-none"
                   : "",
-                "group relative bg-zinc-800/50 p-6"
+                "group relative bg-zinc-50 shadow dark:bg-zinc-800/50 p-6"
               )}
             >
                 <Card card={card} />

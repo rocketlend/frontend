@@ -4,7 +4,7 @@ import type { AppProps } from "next/app";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, lightTheme, darkTheme } from "@rainbow-me/rainbowkit";
 import Head from "next/head";
 import Layout from "../components/layout";
 import { Radio_Canada, Fredoka, Murecho, Ysabeau_Infant, Karla, Work_Sans } from "next/font/google";
@@ -42,7 +42,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       `}</style>
       <WagmiProvider config={config}>
         <QueryClientProvider client={client}>
-          <RainbowKitProvider>
+          <RainbowKitProvider theme={{ lightMode: lightTheme(), darkMode: darkTheme() }}>
             <Layout>
               <Head>
                 <title>Rocket Lend</title>
