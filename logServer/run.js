@@ -29,11 +29,11 @@ const cache = {
   pendingLenderIdsByAddress: {},
 }
 
-const eventNames = [
+const eventNames = [[
   'RegisterLender',
   'PendingChangeLenderAddress',
   'ConfirmChangeLenderAddress',
-]
+]]
 
 const updateCache = async (toBlock) => {
   while (cache.blockNumber < toBlock) {
@@ -58,7 +58,7 @@ const updateCache = async (toBlock) => {
         switch (log.eventName) {
           case 'RegisterLender': {
             const address = tx.from.toLowerCase()
-            const lenderId = log.args.id.toString()
+            const lenderId = log.args.lender.toString()
             cache.lenderIdsByAddress[address] ||= new Set()
             console.log(`Adding lenderId ${lenderId} to ${tx.from}`)
             cache.lenderIdsByAddress[address].add(lenderId)
