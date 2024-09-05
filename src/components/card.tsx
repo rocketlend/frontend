@@ -28,7 +28,7 @@ const Card = ({
         </span>
       </div>
       <div className="mt-8">
-        <h3 className="text-base font-semibold leading-6 text-zinc-900 dark:text-zinc-200">
+        <h3 className="text-lg font-semibold leading-6 text-zinc-900 dark:text-zinc-200">
           {card.title}
         </h3>
         {card.content.map((sentence, i) => {

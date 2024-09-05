@@ -4,10 +4,21 @@ import type { AppProps } from "next/app";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import { RainbowKitProvider, lightTheme, darkTheme } from "@rainbow-me/rainbowkit";
+import {
+  RainbowKitProvider,
+  lightTheme,
+  darkTheme,
+} from "@rainbow-me/rainbowkit";
 import Head from "next/head";
 import Layout from "../components/layout";
-import { Radio_Canada, Fredoka, Murecho, Ysabeau_Infant, Karla, Work_Sans } from "next/font/google";
+import {
+  Radio_Canada,
+  Fredoka,
+  Murecho,
+  Ysabeau_Infant,
+  Karla,
+  Work_Sans,
+} from "next/font/google";
 
 import { config } from "../wagmi";
 
@@ -18,31 +29,48 @@ const workSans = Work_Sans({
 });
 const karla = Karla({
   subsets: ["latin"],
-})
+});
 const ysabeau = Ysabeau_Infant({
   subsets: ["latin"],
-})
+});
 const murecho = Murecho({
   subsets: ["latin"],
-})
+});
 const fredoka = Fredoka({
   subsets: ["latin"],
-})
+});
 const radioCanada = Radio_Canada({
   subsets: ["latin"],
-})
+});
+
+const currentBaseFont = karla;
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <style jsx global>{`
         html {
-          font-family: ${radioCanada.style.fontFamily};
+          font-family: ${currentBaseFont.style.fontFamily};
         }
       `}</style>
       <WagmiProvider config={config}>
         <QueryClientProvider client={client}>
-          <RainbowKitProvider theme={{ lightMode: lightTheme(), darkMode: darkTheme() }}>
+          <RainbowKitProvider
+            theme={{
+              lightMode: {
+                ...lightTheme(),
+                fonts: {
+                  body: currentBaseFont.style.fontFamily,
+                },
+              },
+              darkMode: {
+                ...darkTheme(),
+                fonts: {
+                  body: currentBaseFont.style.fontFamily,
+                }
+              }
+            }}
+          >
             <Layout>
               <Head>
                 <title>Rocket Lend</title>

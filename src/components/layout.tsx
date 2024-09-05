@@ -30,7 +30,7 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 
 // import styles from "../styles/Home.module.css";
 import { FC, ReactNode } from "react";
-import { DiscordIcon, GitHubIcon } from "./CustomIcons";
+import { DiscordIcon, GitHubIcon } from "./Icons";
 
 const navItems = [
   { label: "Home", url: "/" },

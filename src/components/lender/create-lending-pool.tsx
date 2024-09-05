@@ -16,7 +16,7 @@ import { useAccount } from "wagmi";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import { TransactionSubmitter } from "../TransactionSubmitter";
 import rocketLendABI from "../../rocketlend.abi";
-import { DropIcon } from "../CustomIcons";
+import { DropIcon } from "../Icons";
 import { NULL_ADDRESS } from "../../constants";
 
 // NOTE idk if we'll use this, but here it is just in case
