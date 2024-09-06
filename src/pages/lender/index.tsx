@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
   useReadContract,
+  useReadContracts,
   useWriteContract,
   useWaitForTransactionReceipt,
   useAccount,
@@ -21,6 +22,8 @@ import { useRocketAddress } from "../../hooks/useRocketAddress";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import ChangeAddress from "../../components/lender/change-address";
 import CreateLendingPool from "../../components/lender/create-lending-pool";
+
+const NULL_ADDRESS = '0x'.padEnd(42, '0');
 
 const RPLBalance = ({ accountAddress }: { accountAddress: `0x${string}` }) => {
   const {
@@ -101,6 +104,19 @@ const RegisterLenderForm = ({
 };
 
 const LenderOverview = ({ lenderIds }: { lenderIds: string[] }) => {
+  const rocketLendAddress = useRocketLendAddress();
+  const {
+    data: pendingTransfers,
+    error: pendingTransfersError,
+    refetch: refetchPendingTransfers
+  } = useReadContracts({
+    contracts: lenderIds.map(lenderId => ({
+      address: rocketLendAddress,
+      abi: rocketLendABI,
+      functionName: 'pendingLenderAddress',
+      args: [BigInt(lenderId)]
+    }))
+  });
   return (
     <>
       <section>
@@ -110,7 +126,16 @@ const LenderOverview = ({ lenderIds }: { lenderIds: string[] }) => {
       <CreateLendingPool />
       <section>
         <h2>Transfer Lender Id</h2>
-        <p>Current Lender Ids: {lenderIds.join()}</p>
+        <p>Current Lender Ids: {
+          pendingTransfersError ? `Error fetching pending transfers: ${pendingTransfersError.message}` :
+          pendingTransfers ?
+            lenderIds.map(
+              (id, i) => pendingTransfers[i].result == NULL_ADDRESS ?
+                         id :
+                        `${id} (pending transfer to ${pendingTransfers[i].result})`
+            ).join() :
+          '...fetching pending transfers'
+        }</p>
         <ChangeAddress />
       </section>
     </>
