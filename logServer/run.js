@@ -78,7 +78,7 @@ const updateCache = async (toBlock) => {
           case 'ConfirmChangeLenderAddress': {
             const oldAddress = log.args.old.toLowerCase()
             const oldPending = log.args.oldPending.toLowerCase()
-            const newAddress = (desc.name == 'changeLenderAddress' ? decs.args._newAddress : tx.from).toLowerCase()
+            const newAddress = (desc.name == 'changeLenderAddress' ? desc.args._newAddress : tx.from).toLowerCase()
             const lenderId = desc.args._lender.toString()
             cache.lenderIdsByAddress[newAddress] ||= new Set()
             console.log(`Removing lenderId ${lenderId} from ${log.args.old}`)
