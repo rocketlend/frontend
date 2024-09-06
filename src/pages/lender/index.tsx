@@ -70,11 +70,23 @@ type RefetchType = (options?: {
 type RefreshUntilBlockType = { blockNumber?: undefined, needsRefresh?: undefined } | { blockNumber: number, needsRefresh: true };
 
 const ConfirmChangeLenderAddressSection = ({
-  pendingLenderIds
+  pendingLenderIds,
+  setRefreshUntilBlock,
 } : {
   pendingLenderIds: string[];
+  setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
 }) => {
   const rocketLendAddress = useRocketLendAddress();
+  // TODO: abstract out onSuccess definition
+  const onSuccess = (receipt: TransactionReceipt) => {
+    console.log(`Adopt lender transaction success in block ${receipt.blockNumber}`);
+    const blockNumber = Number(receipt.blockNumber);
+    setRefreshUntilBlock(prev => {
+      const {blockNumber: prevBlockNumber} = prev;
+      const stale = typeof prevBlockNumber == 'undefined' || prevBlockNumber < blockNumber;
+      return stale ? {blockNumber, needsRefresh: true} : prev;
+    });
+  };
   return !!pendingLenderIds.length && (
     <section>
       <h2>Confirm Transfer of Lender Id</h2>
@@ -85,17 +97,20 @@ const ConfirmChangeLenderAddressSection = ({
                  abi={rocketLendABI}
                  functionName="confirmChangeLenderAddress"
                  args={[BigInt(id)]}
+                 onSuccess={onSuccess}
               />
       )}
     </section>
-  ); // TODO: add onSuccess that refreshes the pending lender ids
+  );
 };
 
 const RegisterLenderForm = ({
   setRefreshUntilBlock,
+  setRefreshPendingUntilBlock,
   pendingLenderIds,
 }: {
   setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
+  setRefreshPendingUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
   pendingLenderIds: Array<string>;
 }) => {
   const address = useRocketLendAddress();
@@ -114,7 +129,9 @@ const RegisterLenderForm = ({
     // 4. send the log server a desired block to be above (it hangs until it gets there)
   };
   return (<>
-    <ConfirmChangeLenderAddressSection pendingLenderIds={pendingLenderIds}/>
+    <ConfirmChangeLenderAddressSection
+     setRefreshUntilBlock={setRefreshPendingUntilBlock}
+     pendingLenderIds={pendingLenderIds}/>
     <section>
       <h2>Register as a Rocket Lend Lender</h2>
       <TransactionSubmitter
@@ -130,10 +147,12 @@ const RegisterLenderForm = ({
 
 const LenderOverview = ({
   lenderIds,
-  pendingLenderIds
+  pendingLenderIds,
+  setRefreshPendingUntilBlock,
 }: {
   lenderIds: string[];
   pendingLenderIds: string[];
+  setRefreshPendingUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
 }) => {
   const rocketLendAddress = useRocketLendAddress();
   const {
@@ -150,7 +169,9 @@ const LenderOverview = ({
   });
   return (
     <>
-      <ConfirmChangeLenderAddressSection pendingLenderIds={pendingLenderIds}/>
+      <ConfirmChangeLenderAddressSection
+       setRefreshUntilBlock={setRefreshPendingUntilBlock}
+       pendingLenderIds={pendingLenderIds}/>
       <section>
         <h2>Your Lending Pools</h2>
         <p>TODO only show this if there are existing pools for this lender</p>
@@ -189,29 +210,40 @@ const Page: NextPage = () => {
   } = useQuery(pendingLenderIdsQuery({logServerUrl, address}));
   // TODO: add listener to events that calls refreshLenderId on new events
   const [refreshUntilBlock, setRefreshUntilBlock] = useState<RefreshUntilBlockType>({});
-  useEffect(() => {
-    if (refreshUntilBlock.needsRefresh) {
-      if (typeof lenderIdsData == 'undefined' ||
-          lenderIdsData.untilBlock < refreshUntilBlock.blockNumber) {
-        refreshLenderIds().then(
-          () => setRefreshUntilBlock(
-            ({blockNumber}) => typeof blockNumber == 'undefined' ? {} : {blockNumber, needsRefresh: true}
-          )
-        );
+  const [refreshPendingUntilBlock, setRefreshPendingUntilBlock] = useState<RefreshUntilBlockType>({});
+  const makeRefresher = (
+    stateVar: RefreshUntilBlockType,
+    setter: Dispatch<SetStateAction<RefreshUntilBlockType>>,
+    dataVar: { untilBlock: number } | undefined,
+    refresher: RefetchType,
+  ) : [() => void, React.DependencyList] => [
+    () => {
+      if (stateVar.needsRefresh) {
+        if (typeof dataVar == 'undefined' ||
+            dataVar.untilBlock < stateVar.blockNumber) {
+          refresher().then(
+            () => setter(
+              ({blockNumber}) => typeof blockNumber == 'undefined' ? {} : {blockNumber, needsRefresh: true}
+            )
+          );
+        }
+        else
+          setter({});
       }
-      else
-        setRefreshUntilBlock({});
-    }
-  }, [refreshUntilBlock, lenderIdsData]);
+    }, [refresher, dataVar]];
+  useEffect(...makeRefresher(refreshUntilBlock, setRefreshUntilBlock, lenderIdsData, refreshLenderIds));
+  useEffect(...makeRefresher(refreshPendingUntilBlock, setRefreshPendingUntilBlock, pendingLenderIdsData, refreshPendingLenderIds));
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address as `0x${string}`} />
       {lenderIdsData?.lenderIds.length ?
         <LenderOverview
            pendingLenderIds={pendingLenderIdsData?.pendingLenderIds || []}
+           setRefreshPendingUntilBlock={setRefreshPendingUntilBlock}
            lenderIds={lenderIdsData.lenderIds} /> :
         <RegisterLenderForm
            pendingLenderIds={pendingLenderIdsData?.pendingLenderIds || []}
+           setRefreshPendingUntilBlock={setRefreshPendingUntilBlock}
            setRefreshUntilBlock={setRefreshUntilBlock}
         />
         // <LenderOverview lenderIds={['0']} />
