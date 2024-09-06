@@ -27,12 +27,20 @@ const cache = {
   logIndex: 0,
   lenderIdsByAddress: {},
   pendingLenderIdsByAddress: {},
+  nodesByBorrowerAddress: {},
+  pendingNodesByBorrowerAddress: {},
+  createdPoolIds: {},
 }
 
 const eventNames = [[
   'RegisterLender',
   'PendingChangeLenderAddress',
   'ConfirmChangeLenderAddress',
+  'CreatePool',
+  'JoinProtocol',
+  'LeaveProtocol',
+  'PendingChangeBorrowerAddress',
+  'ConfirmChangeBorrowerAddress',
 ]]
 
 const updateCache = async (toBlock) => {
@@ -88,6 +96,55 @@ const updateCache = async (toBlock) => {
             if (cache.pendingLenderIdsByAddress[oldPending]) {
               console.log(`Clearing pending transfer of ${lenderId} to ${log.args.old}`)
               cache.pendingLenderIdsByAddress[oldPending].delete(lenderId)
+            }
+            break
+          }
+          case 'JoinProtocol': {
+            const node = desc.args._node.toLowerCase()
+            const borrower = log.args.borrower.toLowerCase()
+            cache.nodesByBorrowerAddress[borrower] ||= new Set()
+            console.log(`Adding node ${desc.args._node} to borrower ${log.args.borrower}`)
+            cache.nodesByBorrowerAddress[borrower].add(node)
+            break
+          }
+          case 'LeaveProtocol': {
+            const oldAddress = tx.from.toLowerCase()
+            const oldPending = log.args.oldPending.toLowerCase()
+            const node = desc.args._node.toLowerCase()
+            console.log(`Removing node ${desc.args._node} from ${tx.from}`)
+            cache.nodesByBorrowerAddress[oldAddress].delete(node)
+            if (cache.pendingNodesByBorrowerAddress[oldPending]) {
+              console.log(`Clearing pending transfer of ${desc.args._node} to ${log.args.oldPending}`)
+              cache.pendingNodesByBorrowerAddress[oldPending].delete(node)
+            }
+            break
+          }
+          case 'PendingChangeBorrowerAddress': {
+            const oldAddress = log.args.old.toLowerCase()
+            const newAddress = desc.args._newAddress.toLowerCase()
+            const node = desc.args._node.toLowerCase()
+            cache.pendingNodesByBorrowerAddress[newAddress] ||= new Set()
+            if (cache.pendingNodesByBorrowerAddress[oldAddress]) {
+              console.log(`Clearing pending transfer of ${desc.args._node} to ${log.args.old}`)
+              cache.pendingNodesByBorrowerAddress[oldAddress].delete(node)
+            }
+            console.log(`Adding pending transfer of ${desc.args._node} to ${desc.args._newAddress}`)
+            cache.pendingLenderIdsByAddress[newAddress].add(node)
+            break
+          }
+          case 'ConfirmChangeBorrowerAddress': {
+            const oldAddress = log.args.old.toLowerCase()
+            const oldPending = log.args.oldPending.toLowerCase()
+            const newAddress = (desc.name == 'changeBorrowerAddress' ? desc.args._newAddress : tx.from).toLowerCase()
+            const node = desc.args._node.toLowerCase()
+            cache.nodesByBorrowerAddress[newAddress] ||= new Set()
+            console.log(`Removing node ${desc.args._node} from ${log.args.old}`)
+            cache.nodesByBorrowerAddress[oldAddress].delete(node)
+            console.log(`Adding node ${desc.args._node} to ${ethers.getAddress(newAddress)}`)
+            cache.nodesByBorrowerAddress[newAddress].add(node)
+            if (cache.pendingNodesByBorrowerAddress[oldPending]) {
+              console.log(`Clearing pending transfer of ${desc.args._node} to ${log.args.old}`)
+              cache.pendingNodesByBorrowerAddress[oldPending].delete(node)
             }
             break
           }
