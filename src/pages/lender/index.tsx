@@ -69,14 +69,26 @@ type RefetchType = (options?: {
 
 type RefreshUntilBlockType = { blockNumber?: undefined, needsRefresh?: undefined } | { blockNumber: number, needsRefresh: true };
 
-const ConfirmChangeLenderAddressForm = ({
+const ConfirmChangeLenderAddressSection = ({
   pendingLenderIds
 } : {
   pendingLenderIds: string[];
 }) => {
-  const address = useRocketLendAddress();
-  const [lenderId, setLenderId] = useState();
-  return (<p>TODO: transaction form to select and confirm one of the incoming lender ids: {pendingLenderIds.join()}</p>)
+  const rocketLendAddress = useRocketLendAddress();
+  return !!pendingLenderIds.length && (
+    <section>
+      <h2>Confirm Transfer of Lender Id</h2>
+      {pendingLenderIds.map(
+       id => <TransactionSubmitter
+                 buttonText={`Adopt Lender Id ${id}`}
+                 address={rocketLendAddress}
+                 abi={rocketLendABI}
+                 functionName="confirmChangeLenderAddress"
+                 args={[BigInt(id)]}
+              />
+      )}
+    </section>
+  ); // TODO: add onSuccess that refreshes the pending lender ids
 };
 
 const RegisterLenderForm = ({
@@ -102,6 +114,7 @@ const RegisterLenderForm = ({
     // 4. send the log server a desired block to be above (it hangs until it gets there)
   };
   return (<>
+    <ConfirmChangeLenderAddressSection pendingLenderIds={pendingLenderIds}/>
     <section>
       <h2>Register as a Rocket Lend Lender</h2>
       <TransactionSubmitter
@@ -112,8 +125,6 @@ const RegisterLenderForm = ({
         onSuccess={onSuccess}
       />
     </section>
-    {pendingLenderIds.length &&
-     <ConfirmChangeLenderAddressForm pendingLenderIds={pendingLenderIds}/>}
   </>);
 };
 
@@ -139,6 +150,7 @@ const LenderOverview = ({
   });
   return (
     <>
+      <ConfirmChangeLenderAddressSection pendingLenderIds={pendingLenderIds}/>
       <section>
         <h2>Your Lending Pools</h2>
         <p>TODO only show this if there are existing pools for this lender</p>
@@ -158,8 +170,6 @@ const LenderOverview = ({
         }</p>
         <ChangeAddress />
       </section>
-      {pendingLenderIds.length &&
-       <ConfirmChangeLenderAddressForm pendingLenderIds={pendingLenderIds}/>}
     </>
   );
 };
@@ -196,7 +206,6 @@ const Page: NextPage = () => {
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address as `0x${string}`} />
-      <p>pendingLenderIdsData: {JSON.stringify(pendingLenderIdsData)}; pendingLenderIdsError: {pendingLenderIdsError?.message}</p>
       {lenderIdsData?.lenderIds.length ?
         <LenderOverview
            pendingLenderIds={pendingLenderIdsData?.pendingLenderIds || []}
