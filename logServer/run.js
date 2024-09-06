@@ -96,7 +96,7 @@ const updateCache = async (toBlock) => {
         cache.logIndex = log.index
       }
       else {
-        console.log(`Skipping ${log.blockNumber}:${log.logIndex} vs ${cache.blockNumber}:${cache.logIndex}`)
+        console.log(`Skipping ${log.blockNumber}:${log.index} vs ${cache.blockNumber}:${cache.logIndex}`)
       }
     }
     if (!logs.length) {
