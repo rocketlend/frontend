@@ -50,8 +50,6 @@ const updateCache = async (toBlock) => {
       if (cache.blockNumber < log.blockNumber ||
           cache.blockNumber === log.blockNumber &&
           cache.logIndex < log.index) {
-        cache.blockNumber = log.blockNumber
-        cache.logIndex = log.index
         console.log(`Waiting to get transaction from log at ${log.blockNumber}`)
         const tx = await log.getTransaction()
         const desc = rocketLend.interface.parseTransaction(tx)
@@ -94,12 +92,14 @@ const updateCache = async (toBlock) => {
             break
           }
         }
+        cache.blockNumber = log.blockNumber
+        cache.logIndex = log.index
       }
       else {
         console.log(`Skipping ${log.blockNumber}:${log.logIndex} vs ${cache.blockNumber}:${cache.logIndex}`)
       }
     }
-    if (cache.blockNumber == fromBlock) {
+    if (!logs.length) {
       cache.blockNumber = untilBlock
       cache.logIndex = 0
     }
