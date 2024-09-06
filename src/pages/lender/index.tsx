@@ -12,7 +12,7 @@ import { formatEther } from "viem";
 import type { TransactionReceipt } from "viem";
 import rocketLendABI from "../../rocketlend.abi";
 import rplABI from "../../rocketTokenRPL.abi";
-import { lenderIdsQuery } from "../../functions/lenderIdsQuery";
+import { lenderIdsQuery, pendingLenderIdsQuery } from "../../functions/lenderIdsQuery";
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { TransactionSubmitter } from "../../components/TransactionSubmitter";
@@ -69,10 +69,22 @@ type RefetchType = (options?: {
 
 type RefreshUntilBlockType = { blockNumber?: undefined, needsRefresh?: undefined } | { blockNumber: number, needsRefresh: true };
 
+const ConfirmChangeLenderAddressForm = ({
+  pendingLenderIds
+} : {
+  pendingLenderIds: string[];
+}) => {
+  const address = useRocketLendAddress();
+  const [lenderId, setLenderId] = useState();
+  return (<p>TODO: transaction form to select and confirm one of the incoming lender ids: {pendingLenderIds.join()}</p>)
+};
+
 const RegisterLenderForm = ({
   setRefreshUntilBlock,
+  pendingLenderIds,
 }: {
   setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
+  pendingLenderIds: Array<string>;
 }) => {
   const address = useRocketLendAddress();
   const onSuccess = (receipt: TransactionReceipt) => {
@@ -89,21 +101,29 @@ const RegisterLenderForm = ({
     // 3. polling;
     // 4. send the log server a desired block to be above (it hangs until it gets there)
   };
-  return (
+  return (<>
     <section>
       <h2>Register as a Rocket Lend Lender</h2>
       <TransactionSubmitter
-        buttonText="Register"
+        buttonText="Register New Lender Id"
         address={address}
         abi={rocketLendABI}
         functionName="registerLender"
         onSuccess={onSuccess}
       />
     </section>
-  );
+    {pendingLenderIds.length &&
+     <ConfirmChangeLenderAddressForm pendingLenderIds={pendingLenderIds}/>}
+  </>);
 };
 
-const LenderOverview = ({ lenderIds }: { lenderIds: string[] }) => {
+const LenderOverview = ({
+  lenderIds,
+  pendingLenderIds
+}: {
+  lenderIds: string[];
+  pendingLenderIds: string[];
+}) => {
   const rocketLendAddress = useRocketLendAddress();
   const {
     data: pendingTransfers,
@@ -138,6 +158,8 @@ const LenderOverview = ({ lenderIds }: { lenderIds: string[] }) => {
         }</p>
         <ChangeAddress />
       </section>
+      {pendingLenderIds.length &&
+       <ConfirmChangeLenderAddressForm pendingLenderIds={pendingLenderIds}/>}
     </>
   );
 };
@@ -150,6 +172,11 @@ const Page: NextPage = () => {
     error: lenderIdsError,
     refetch: refreshLenderIds,
   } = useQuery(lenderIdsQuery({logServerUrl, address}));
+  const {
+    data: pendingLenderIdsData,
+    error: pendingLenderIdsError,
+    refetch: refreshPendingLenderIds,
+  } = useQuery(pendingLenderIdsQuery({logServerUrl, address}));
   // TODO: add listener to events that calls refreshLenderId on new events
   const [refreshUntilBlock, setRefreshUntilBlock] = useState<RefreshUntilBlockType>({});
   useEffect(() => {
@@ -169,9 +196,15 @@ const Page: NextPage = () => {
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address as `0x${string}`} />
+      <p>pendingLenderIdsData: {JSON.stringify(pendingLenderIdsData)}; pendingLenderIdsError: {pendingLenderIdsError?.message}</p>
       {lenderIdsData?.lenderIds.length ?
-        <LenderOverview lenderIds={lenderIdsData.lenderIds} /> :
-        <RegisterLenderForm setRefreshUntilBlock={setRefreshUntilBlock} />
+        <LenderOverview
+           pendingLenderIds={pendingLenderIdsData?.pendingLenderIds || []}
+           lenderIds={lenderIdsData.lenderIds} /> :
+        <RegisterLenderForm
+           pendingLenderIds={pendingLenderIdsData?.pendingLenderIds || []}
+           setRefreshUntilBlock={setRefreshUntilBlock}
+        />
         // <LenderOverview lenderIds={['0']} />
       }
     </IfConnected>

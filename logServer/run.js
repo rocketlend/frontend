@@ -131,4 +131,16 @@ app.get(`/lenderIds/:address(${addressRe})`, async (req, res, next) => {
   catch (e) { next(e) }
 })
 
+app.get(`/pendingLenderIds/:address(${addressRe})`, async (req, res, next) => {
+  try {
+    const address = req.params.address.toLowerCase()
+    const ids = cache.pendingLenderIdsByAddress[address] || []
+    return res.status(200).json({
+      untilBlock: cache.blockNumber,
+      pendingLenderIds: Array.from(ids),
+    })
+  }
+  catch (e) { next(e) }
+})
+
 app.listen(port)
