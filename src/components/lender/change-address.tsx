@@ -64,7 +64,7 @@ const ChangeAddress = () => {
        address={rocketLendAddress}
        abi={rocketLendABI}
        functionName="changeLenderAddress"
-       args={[lenderId, newAddress, requireConfirmation]}
+       args={[lenderId, newAddress, !requireConfirmation]}
       />
     </form>
   );
