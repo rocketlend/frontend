@@ -26,8 +26,7 @@ import { useRocketAddress } from "../../hooks/useRocketAddress";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import ChangeAddress from "../../components/lender/change-address";
 import CreateLendingPool from "../../components/lender/create-lending-pool";
-
-const NULL_ADDRESS = '0x'.padEnd(42, '0');
+import { NULL_ADDRESS } from "../../constants";
 
 const RPLBalance = ({ accountAddress }: { accountAddress: `0x${string}` }) => {
   const {
