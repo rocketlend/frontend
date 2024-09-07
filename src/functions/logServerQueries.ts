@@ -33,3 +33,20 @@ export function pendingLenderIdsQuery(
     }),
   };
 };
+
+export function poolIdsQuery(
+  {logServerUrl, lenderId} :
+  {logServerUrl: string | undefined, lenderId: string | undefined}
+) {
+  return {
+    enabled: !!(logServerUrl && lenderId),
+    queryKey: ["rocketlend", "poolIds", lenderId],
+    queryFn: serverQueryFn({
+      onJSON: async ({poolIds, untilBlock}: {poolIds: string[], untilBlock: number}) => (
+        { poolIds, untilBlock }
+      ),
+      onNotFound: async () => ({poolIds: [], untilBlock: 0}),
+      url: `${logServerUrl}/poolIds/${lenderId}`,
+    }),
+  };
+};

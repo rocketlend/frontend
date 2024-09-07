@@ -14,7 +14,7 @@ import { useAccount } from "wagmi";
 import { TransactionSubmitter } from "../TransactionSubmitter";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import rocketLendABI from "../../rocketlend.abi";
-import { lenderIdsQuery } from "../../functions/lenderIdsQuery";
+import { lenderIdsQuery } from "../../functions/logServerQueries";
 import { useQuery } from "@tanstack/react-query";
 import { useLogServerURL } from "../../hooks/useLogServerURL";
 
