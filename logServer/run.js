@@ -29,7 +29,7 @@ const cache = {
   pendingLenderIdsByAddress: {},
   nodesByBorrowerAddress: {},
   pendingNodesByBorrowerAddress: {},
-  createdPoolIds: {},
+  poolIdsByLenderId: {},
 }
 
 const eventNames = [[
@@ -148,6 +148,14 @@ const updateCache = async (toBlock) => {
             }
             break
           }
+          case 'CreatePool': {
+            const poolId = log.args.id.toLowerCase()
+            const lenderId = desc.args._params.lender.toString()
+            cache.poolIdsByLenderId[lenderId] ||= new Set()
+            console.log(`Adding pool ${log.args.id} to lender ${lenderId}`)
+            cache.poolIdsByLenderId[lenderId].add(poolId)
+            break
+          }
         }
         cache.blockNumber = log.blockNumber
         cache.logIndex = log.index
@@ -171,6 +179,7 @@ provider.on('block', async (blockNumber) => {
 })
 
 const addressRe = '0x[0-9a-fA-F]{40}'
+const numberRe = '[1-9][0-9]*'
 
 const app = express()
 
@@ -198,6 +207,41 @@ app.get(`/pendingLenderIds/:address(${addressRe})`, async (req, res, next) => {
     })
   }
   catch (e) { next(e) }
+})
+
+app.get(`/nodes/:address(${addressRe})`, async (req, res, next) => {
+  try {
+    const address = req.params.address.toLowerCase()
+    const nodes = cache.nodesByBorrowerAddress[address] || []
+    return res.status(200).json({
+      untilBlock: cache.blockNumber,
+      nodes: Array.from(nodes),
+    })
+  }
+  catch (e) { next(e) }
+})
+
+app.get(`/pendingNodes/:address(${addressRe})`, async (req, res, next) => {
+  try {
+    const address = req.params.address.toLowerCase()
+    const nodes = cache.pendingNodesByBorrowerAddress[address] || []
+    return res.status(200).json({
+      untilBlock: cache.blockNumber,
+      pendingNodes: Array.from(nodes),
+    })
+  }
+  catch (e) { next(e) }
+})
+
+app.get(`/poolIds/:lenderId(${numberRe})`, async (req, res, next) => {
+  try {
+    const ids = cache.poolIdsByLenderId[req.params.lenderId] || []
+    return res.status(200).json({
+      untilBlock: cache.blockNumber,
+      poolIds: Array.from(ids),
+    })
+  }
+  catch (e) { next (e) }
 })
 
 app.listen(port)
