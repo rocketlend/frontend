@@ -34,6 +34,40 @@ export function pendingLenderIdsQuery(
   };
 };
 
+export function nodesQuery(
+  {logServerUrl, address} :
+  {logServerUrl: string | undefined, address: `0x${string}` | undefined}
+) {
+  return {
+    enabled: !!(logServerUrl && address),
+    queryKey: ["rocketlend", "nodes", address],
+    queryFn: serverQueryFn({
+      onJSON: async ({nodes, untilBlock}: {nodes: string[], untilBlock: number}) => (
+        { nodes, untilBlock }
+      ),
+      onNotFound: async () => ({nodes: [], untilBlock: 0}),
+      url: `${logServerUrl}/nodes/${address}`,
+    }),
+  };
+};
+
+export function pendingNodesQuery(
+  {logServerUrl, address} :
+  {logServerUrl: string | undefined, address: `0x${string}` | undefined}
+) {
+  return {
+    enabled: !!(logServerUrl && address),
+    queryKey: ["rocketlend", "pendingNodes", address],
+    queryFn: serverQueryFn({
+      onJSON: async ({pendingNodes, untilBlock}: {pendingNodes: string[], untilBlock: number}) => (
+        { pendingNodes, untilBlock }
+      ),
+      onNotFound: async () => ({pendingNodes: [], untilBlock: 0}),
+      url: `${logServerUrl}/pendingNodes/${address}`,
+    }),
+  };
+};
+
 export function poolIdsQuery(
   {logServerUrl, lenderId} :
   {logServerUrl: string | undefined, lenderId: string | undefined}
