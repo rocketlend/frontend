@@ -12,7 +12,6 @@ import rocketLendABI from "../../rocketlend.abi";
 import {
   lenderIdsQuery,
   pendingLenderIdsQuery,
-  poolIdsQuery
 } from "../../functions/logServerQueries";
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
@@ -108,24 +107,6 @@ const RegisterLenderForm = ({
   </>);
 };
 
-const LendingPools = ({ lenderId } : { lenderId: string }) => {
-  const logServerUrl = useLogServerURL();
-  const {
-    data: poolIdsData,
-    error: poolIdsError,
-    refetch: refreshPoolIds,
-  } = useQuery(poolIdsQuery({logServerUrl, lenderId}));
-  return (
-    poolIdsError ? <p>Error fetching pool Ids for {lenderId}: {poolIdsError.message}</p> :
-    !poolIdsData ? <p>fetching pool ids...</p> :
-    !poolIdsData.poolIds.length ? null :
-    <section>
-      <h2>Your Lending Pools</h2>
-      <p>TODO lending pools for lender {lenderId} are: {poolIdsData.poolIds.join()}</p>
-    </section>
-  );
-};
-
 const LenderOverview = ({
   lenderIds,
   pendingLenderIds,
@@ -160,8 +141,7 @@ const LenderOverview = ({
       <label>Lender Id<select value={selectedLenderId} onChange={handleSelectLenderId}>
         {lenderIds.map(lenderId => <option value={lenderId}>{lenderId}</option>)}
       </select></label>
-      {selectedLenderId && <LendingPools lenderId={selectedLenderId} />}
-      <CreateLendingPool />
+      <p>TODO replace selection with links</p>
       <section>
         <h2>Transfer Lender Id</h2>
         <p>Current Lender Ids: {
