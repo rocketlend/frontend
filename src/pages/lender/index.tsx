@@ -2,16 +2,13 @@ import type { NextPage } from "next";
 import { useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
-  useReadContract,
   useReadContracts,
   useWriteContract,
   useWaitForTransactionReceipt,
   useAccount,
 } from "wagmi";
-import { formatEther } from "viem";
 import type { TransactionReceipt } from "viem";
 import rocketLendABI from "../../rocketlend.abi";
-import rplABI from "../../rocketTokenRPL.abi";
 import {
   lenderIdsQuery,
   pendingLenderIdsQuery,
@@ -22,48 +19,11 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { TransactionSubmitter } from "../../components/TransactionSubmitter";
 import { IfConnected } from "../../components/IfConnected";
 import { useLogServerURL } from "../../hooks/useLogServerURL";
-import { useRocketAddress } from "../../hooks/useRocketAddress";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import ChangeAddress from "../../components/lender/change-address";
 import CreateLendingPool from "../../components/lender/create-lending-pool";
+import { RPLBalance } from "../../components/RPLBalance";
 import { NULL_ADDRESS } from "../../constants";
-
-const RPLBalance = ({ accountAddress }: { accountAddress: `0x${string}` }) => {
-  const {
-    data: rplAddress,
-    error: rplAddressError,
-    fetchStatus: rplAddressStatus,
-  } = useRocketAddress("rocketTokenRPL");
-  const {
-    data: rplBalance,
-    error: rplBalanceError,
-    fetchStatus: rplBalanceStatus,
-  } = useReadContract({
-    abi: rplABI,
-    address: rplAddress,
-    functionName: "balanceOf",
-    args: [accountAddress],
-  });
-  return (
-      typeof rplBalance == 'bigint' ?
-      <p>Balance: {formatEther(rplBalance)} RPL</p> :
-      <ul>
-        <li>ERROR GETTING RPL BALANCE, DEBUG INFO BELOW</li>
-        <li>
-          Addresses {rplAddress}; {accountAddress}
-        </li>
-        <li>
-          Address Types {typeof rplAddress}; {typeof accountAddress}
-        </li>
-        <li>Balance Type: {typeof rplBalance}</li>
-        <li>
-          Statuses: {rplAddressStatus} {rplBalanceStatus}
-        </li>
-        <li>Address Error: {rplAddressError?.toString() || "none"}</li>
-        <li>Balance Error: {rplBalanceError?.toString() || "none"}</li>
-      </ul>
-  );
-};
 
 type RefetchType = (options?: {
   throwOnError: boolean;
