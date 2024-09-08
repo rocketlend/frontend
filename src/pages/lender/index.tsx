@@ -174,23 +174,28 @@ const Page: NextPage = () => {
     setter: Dispatch<SetStateAction<RefreshUntilBlockType>>,
     dataVar: { untilBlock: number } | undefined,
     refresher: RefetchType,
+    name: string,
   ) : [() => void, React.DependencyList] => [
     () => {
       if (stateVar.needsRefresh) {
+        console.log(`${name} needs refresh`);
         if (typeof dataVar == 'undefined' ||
             dataVar.untilBlock < stateVar.blockNumber) {
+          console.log(`${name} calling refresher`);
           refresher().then(
             () => setter(
               ({blockNumber}) => typeof blockNumber == 'undefined' ? {} : {blockNumber, needsRefresh: true}
             )
           );
         }
-        else
+        else {
+          console.log(`${name} untilBlock >= state`);
           setter({});
+        }
       }
-    }, [refresher, dataVar]];
-  useEffect(...makeRefresher(refreshUntilBlock, setRefreshUntilBlock, lenderIdsData, refreshLenderIds));
-  useEffect(...makeRefresher(refreshPendingUntilBlock, setRefreshPendingUntilBlock, pendingLenderIdsData, refreshPendingLenderIds));
+    }, [stateVar, dataVar, refresher]];
+  useEffect(...makeRefresher(refreshUntilBlock, setRefreshUntilBlock, lenderIdsData, refreshLenderIds, "lenderIds"));
+  useEffect(...makeRefresher(refreshPendingUntilBlock, setRefreshPendingUntilBlock, pendingLenderIdsData, refreshPendingLenderIds, "pendingLenderIds"));
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address as `0x${string}`} />
