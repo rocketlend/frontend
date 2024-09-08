@@ -209,7 +209,11 @@ const Page: NextPage = () => {
            setRefreshPendingUntilBlock={setRefreshPendingUntilBlock}
            setRefreshUntilBlock={setRefreshUntilBlock}
         />
-        // <LenderOverview lenderIds={['0']} />
+        // <LenderOverview
+        //   pendingLenderIds={[]}
+        //   setRefreshPendingUntilBlock={setRefreshPendingUntilBlock}
+        //   lenderIds={['0']}
+        // />
       }
     </IfConnected>
   );

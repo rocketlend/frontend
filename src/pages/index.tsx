@@ -61,21 +61,21 @@ const Home: NextPage = () => {
 
       <p
         className={
-          "text-lg sm:text-xl md:text-2xl font-extralight text-center my-12 mx-auto max-w-xs sm:max-w-xl"
+          "dark:text-zinc-300 text-lg sm:text-xl md:text-2xl font-extralight text-center my-12 mx-auto max-w-xs sm:max-w-xl"
         }
       >
         The immutable protocol for borrowing and lending staked{" "}
         <Link
           target="_blank"
           href="https://etherscan.io/address/0xd33526068d116ce69f19a9ee46f0bd304f21a51f"
-          className="text-amber-500 rounded-sm font-light"
+          className="rounded-md font-medium hover:text-amber-500"
         >
           RPL
         </Link>{" "}
         for use on{" "}
         <Link
           href="https://rocketpool.net"
-          className="text-amber-500 rounded-sm font-light"
+          className="rounded-md font-medium hover:text-amber-500"
         >
           Rocket Pool
         </Link>{" "}
