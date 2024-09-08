@@ -1,4 +1,5 @@
 import type { NextPage } from "next";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
@@ -19,8 +20,6 @@ import { TransactionSubmitter } from "../../components/TransactionSubmitter";
 import { IfConnected } from "../../components/IfConnected";
 import { useLogServerURL } from "../../hooks/useLogServerURL";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
-import ChangeAddress from "../../components/lender/change-address";
-import CreateLendingPool from "../../components/lender/create-lending-pool";
 import { RPLBalance } from "../../components/RPLBalance";
 import { NULL_ADDRESS } from "../../constants";
 
@@ -129,32 +128,26 @@ const LenderOverview = ({
       args: [BigInt(lenderId)]
     }))
   });
-  const [selectedLenderId, setSelectedLenderId] = useState<string | undefined>();
-  const handleSelectLenderId = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedLenderId(e.target.value);
-  };
   return (
     <>
       <ConfirmChangeLenderAddressSection
        setRefreshUntilBlock={setRefreshPendingUntilBlock}
        pendingLenderIds={pendingLenderIds}/>
-      <label>Lender Id<select value={selectedLenderId} onChange={handleSelectLenderId}>
-        {lenderIds.map(lenderId => <option value={lenderId}>{lenderId}</option>)}
-      </select></label>
-      <p>TODO replace selection with links</p>
       <section>
-        <h2>Transfer Lender Id</h2>
-        <p>Current Lender Ids: {
-          pendingTransfersError ? `Error fetching pending transfers: ${pendingTransfersError.message}` :
+        <h2>Your Lender Ids</h2>
+        { pendingTransfersError ?
+            <p>Error fetching pending transfers: {pendingTransfersError.message}</p> :
           pendingTransfers ?
             lenderIds.map(
-              (id, i) => pendingTransfers[i].result == NULL_ADDRESS ?
-                         id :
-                        `${id} (pending transfer to ${pendingTransfers[i].result})`
-            ).join() :
-          '...fetching pending transfers'
-        }</p>
-        <ChangeAddress />
+              (id, i) => {
+                let text = id;
+                if (pendingTransfers[i].result != NULL_ADDRESS)
+                  text += ` (pending transfer to ${pendingTransfers[i].result})`;
+                return<Link key={id} href={`lender/${id}`}>{text}</Link>
+              }
+            ) :
+          <p>...fetching pending transfers</p>
+        }
       </section>
     </>
   );
