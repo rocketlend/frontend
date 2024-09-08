@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import {
   Description,
   Field,
@@ -14,19 +15,13 @@ import { useAccount } from "wagmi";
 import { TransactionSubmitter } from "../TransactionSubmitter";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import rocketLendABI from "../../rocketlend.abi";
-import { lenderIdsQuery } from "../../functions/logServerQueries";
-import { useQuery } from "@tanstack/react-query";
-import { useLogServerURL } from "../../hooks/useLogServerURL";
 
 // TODO styles, maybe descriptions/tooltips
 const ChangeAddress = () => {
   const [requireConfirmation, setRequireConfirmation] = useState(true);
   const [newAddress, setNewAddress] = useState('');
   const rocketLendAddress = useRocketLendAddress();
-  const {address: lenderAddress} = useAccount();
-  const logServerUrl = useLogServerURL();
-  const {data: lenderIdsData, error: lenderIdsError} = useQuery(lenderIdsQuery({logServerUrl, address: lenderAddress}));
-  const lenderId = lenderIdsData?.lenderIds[0]; // TODO: we need to have some UI state somewhere indicating which lenderId is selected in case there are multiple
+  const { id: lenderId } = useParams<{ id: string }>() || { id: "" };
 
   return (
     <form
