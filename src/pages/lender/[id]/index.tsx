@@ -3,10 +3,11 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useLogServerURL } from "../../../hooks/useLogServerURL";
 import { poolIdsQuery } from "../../../functions/logServerQueries";
+import CreateLendingPool from "../../../components/lender/create-lending-pool";
 
 const LendingPools = () => {
   const logServerUrl = useLogServerURL();
-  const { id: lenderId } = useParams<{ id: string }>();
+  const { id: lenderId } = useParams<{ id: string }>() || { id: "" };
   const {
     data: poolIdsData,
     error: poolIdsError,
@@ -15,11 +16,14 @@ const LendingPools = () => {
   return (
     poolIdsError ? <p>Error fetching pool Ids for {lenderId}: {poolIdsError.message}</p> :
     !poolIdsData ? <p>fetching pool ids...</p> :
-    !poolIdsData.poolIds.length ? null :
-    <section>
-      <h2>Your Lending Pools</h2>
-      <p>TODO lending pools for lender {lenderId} are: {poolIdsData.poolIds.join()}</p>
-    </section>
+    !poolIdsData.poolIds.length ? <CreateLendingPool /> :
+    <>
+      <section>
+        <h2>Your Lending Pools</h2>
+        <p>TODO lending pools for lender {lenderId} are: {poolIdsData.poolIds.join()}</p>
+      </section>
+      <CreateLendingPool />
+    </>
   );
 };
 
