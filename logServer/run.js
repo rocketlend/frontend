@@ -179,7 +179,7 @@ provider.on('block', async (blockNumber) => {
 })
 
 const addressRe = '0x[0-9a-fA-F]{40}'
-const numberRe = '[1-9][0-9]*'
+const numberRe = '0|[1-9][0-9]*'
 
 const app = express()
 
