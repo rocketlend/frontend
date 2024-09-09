@@ -68,10 +68,9 @@ const Footer = () => {
             <span className="sr-only">{"GitHub"}</span>
             <GitHubIcon aria-hidden="true" className="h-6 w-6" />
           </a>
-          {/* TODO get correct Discord link */}
           <a
             key={"Discord"}
-            href={""}
+            href={"https://discord.gg/eUhuZfnyVr"}
             className="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300"
           >
             <span className="sr-only">{"GitHub"}</span>
