@@ -23,12 +23,19 @@ import { TransactionSubmitter } from "../../components/TransactionSubmitter";
 import { IfConnected } from "../../components/IfConnected";
 import { useLogServerURL } from "../../hooks/useLogServerURL";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
+import { makeRefresher, makeOnTransactionSuccess } from "../../functions/logServerRefresher";
+import type { RefreshUntilBlockType } from "../../functions/logServerRefresher";
 import { Input } from "../../components/input";
 import { Field, Label } from "../../components/fieldset";
 
-const JoinAsBorrowerForm = () => {
+const JoinAsBorrowerForm = ({
+  setRefreshUntilBlock,
+} : {
+  setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
+}) => {
   const [node, setNode] = useState<string>('');
   const rocketLendAddress = useRocketLendAddress();
+  const onSuccess = makeOnTransactionSuccess(setRefreshUntilBlock, "Join borrower");
   return (
     <>
       <Field>
@@ -43,13 +50,20 @@ const JoinAsBorrowerForm = () => {
         address={rocketLendAddress}
         abi={rocketLendABI}
         functionName="joinAsBorrower"
-        args={[node]/*TODO: onSuccess refresh nodes*/}
+        args={[node]}
+        onSuccess={onSuccess}
       />
     </>
   );
 };
 
-const BorrowerOverview = ({ nodes } : { nodes: string[] }) => {
+const BorrowerOverview = ({
+  nodes,
+  setRefreshUntilBlock
+} : {
+  nodes: string[];
+  setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
+}) => {
   return (
     <>
     <section>
@@ -60,7 +74,7 @@ const BorrowerOverview = ({ nodes } : { nodes: string[] }) => {
     </section>
     <section>
       <h2>Join Rocket Lend as another node</h2>
-      <JoinAsBorrowerForm />
+      <JoinAsBorrowerForm setRefreshUntilBlock={setRefreshUntilBlock} />
     </section>
     </>
   );
@@ -74,14 +88,16 @@ const Page: NextPage = () => {
     error: nodesError,
     refetch: refreshNodes,
   } = useQuery(nodesQuery({logServerUrl, address}));
+  const [refreshUntilBlock, setRefreshUntilBlock] = useState<RefreshUntilBlockType>({});
+  useEffect(...makeRefresher(refreshUntilBlock, setRefreshUntilBlock, nodesData, refreshNodes, "nodes"));
   return (
     <IfConnected accountStatus={status}>
     { nodesError ? <p>Error fetching nodes for connected address: {nodesError.message}</p> :
       nodesData?.nodes.length ?
-      <BorrowerOverview nodes={nodesData.nodes} /> :
+      <BorrowerOverview nodes={nodesData.nodes} setRefreshUntilBlock={setRefreshUntilBlock} /> :
       <section>
         <h2>Not in Rocket Lend: Join with your node</h2>
-        <JoinAsBorrowerForm />
+        <JoinAsBorrowerForm setRefreshUntilBlock={setRefreshUntilBlock} />
       </section>
     }
     </IfConnected>
