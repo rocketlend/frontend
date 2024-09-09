@@ -15,20 +15,14 @@ import {
   pendingLenderIdsQuery,
 } from "../../functions/logServerQueries";
 import { useQuery } from "@tanstack/react-query";
-import type { UseQueryResult } from "@tanstack/react-query";
 import { TransactionSubmitter } from "../../components/TransactionSubmitter";
 import { IfConnected } from "../../components/IfConnected";
 import { useLogServerURL } from "../../hooks/useLogServerURL";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import { RPLBalance } from "../../components/RPLBalance";
 import { NULL_ADDRESS } from "../../constants";
-
-type RefetchType = (options?: {
-  throwOnError: boolean;
-  cancelRefetch: boolean;
-}) => Promise<UseQueryResult>;
-
-type RefreshUntilBlockType = { blockNumber?: undefined, needsRefresh?: undefined } | { blockNumber: number, needsRefresh: true };
+import { makeRefresher } from "../../functions/logServerRefresher";
+import type { RefreshUntilBlockType } from "../../functions/logServerRefresher";
 
 const ConfirmChangeLenderAddressSection = ({
   pendingLenderIds,
@@ -169,31 +163,6 @@ const Page: NextPage = () => {
   // TODO: add listener to events that calls refreshLenderId on new events
   const [refreshUntilBlock, setRefreshUntilBlock] = useState<RefreshUntilBlockType>({});
   const [refreshPendingUntilBlock, setRefreshPendingUntilBlock] = useState<RefreshUntilBlockType>({});
-  const makeRefresher = (
-    stateVar: RefreshUntilBlockType,
-    setter: Dispatch<SetStateAction<RefreshUntilBlockType>>,
-    dataVar: { untilBlock: number } | undefined,
-    refresher: RefetchType,
-    name: string,
-  ) : [() => void, React.DependencyList] => [
-    () => {
-      if (stateVar.needsRefresh) {
-        console.log(`${name} needs refresh`);
-        if (typeof dataVar == 'undefined' ||
-            dataVar.untilBlock < stateVar.blockNumber) {
-          console.log(`${name} calling refresher`);
-          refresher().then(
-            () => setter(
-              ({blockNumber}) => typeof blockNumber == 'undefined' ? {} : {blockNumber, needsRefresh: true}
-            )
-          );
-        }
-        else {
-          console.log(`${name} untilBlock >= state`);
-          setter({});
-        }
-      }
-    }, [stateVar, dataVar, refresher]];
   useEffect(...makeRefresher(refreshUntilBlock, setRefreshUntilBlock, lenderIdsData, refreshLenderIds, "lenderIds"));
   useEffect(...makeRefresher(refreshPendingUntilBlock, setRefreshPendingUntilBlock, pendingLenderIdsData, refreshPendingLenderIds, "pendingLenderIds"));
   return (
