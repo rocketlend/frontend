@@ -1,5 +1,6 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { Dispatch, SetStateAction } from "react";
+import type { TransactionReceipt } from "viem";
 
 export type RefetchType = (options?: {
   throwOnError: boolean;
@@ -33,3 +34,21 @@ export const makeRefresher = (
       }
     }
   }, [stateVar, dataVar, refresher]];
+
+export const makeOnTransactionSuccess = (
+  setter: Dispatch<SetStateAction<RefreshUntilBlockType>>,
+  name: string
+) => (receipt: TransactionReceipt) => {
+  console.log(`${name} transaction success in block ${receipt.blockNumber}`);
+  const blockNumber = Number(receipt.blockNumber);
+  setter(prev => {
+    const {blockNumber: prevBlockNumber} = prev;
+    const stale = typeof prevBlockNumber == 'undefined' || prevBlockNumber < blockNumber;
+    return stale ? {blockNumber, needsRefresh: true} : prev;
+  });
+  // options we might have done instead of this approach to refreshing:
+  // 1. just use the receipt, ignore server;
+  // 2. socket connection to server so can push;
+  // 3. polling;
+  // 4. send the log server a desired block to be above (it hangs until it gets there)
+};

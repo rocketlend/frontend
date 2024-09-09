@@ -8,7 +8,6 @@ import {
   useWaitForTransactionReceipt,
   useAccount,
 } from "wagmi";
-import type { TransactionReceipt } from "viem";
 import rocketLendABI from "../../rocketlend.abi";
 import {
   lenderIdsQuery,
@@ -21,7 +20,7 @@ import { useLogServerURL } from "../../hooks/useLogServerURL";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import { RPLBalance } from "../../components/RPLBalance";
 import { NULL_ADDRESS } from "../../constants";
-import { makeRefresher } from "../../functions/logServerRefresher";
+import { makeRefresher, makeOnTransactionSuccess } from "../../functions/logServerRefresher";
 import type { RefreshUntilBlockType } from "../../functions/logServerRefresher";
 
 const ConfirmChangeLenderAddressSection = ({
@@ -32,16 +31,7 @@ const ConfirmChangeLenderAddressSection = ({
   setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
 }) => {
   const rocketLendAddress = useRocketLendAddress();
-  // TODO: abstract out onSuccess definition
-  const onSuccess = (receipt: TransactionReceipt) => {
-    console.log(`Adopt lender transaction success in block ${receipt.blockNumber}`);
-    const blockNumber = Number(receipt.blockNumber);
-    setRefreshUntilBlock(prev => {
-      const {blockNumber: prevBlockNumber} = prev;
-      const stale = typeof prevBlockNumber == 'undefined' || prevBlockNumber < blockNumber;
-      return stale ? {blockNumber, needsRefresh: true} : prev;
-    });
-  };
+  const onSuccess = makeOnTransactionSuccess(setRefreshUntilBlock, "Adopt lender id");
   return !!pendingLenderIds.length && (
     <section>
       <h2>Confirm Transfer of Lender Id</h2>
@@ -69,20 +59,7 @@ const RegisterLenderForm = ({
   pendingLenderIds: Array<string>;
 }) => {
   const address = useRocketLendAddress();
-  const onSuccess = (receipt: TransactionReceipt) => {
-    console.log(`Register transaction success in block ${receipt.blockNumber}`);
-    const blockNumber = Number(receipt.blockNumber);
-    setRefreshUntilBlock(prev => {
-      const {blockNumber: prevBlockNumber} = prev;
-      const stale = typeof prevBlockNumber == 'undefined' || prevBlockNumber < blockNumber;
-      return stale ? {blockNumber, needsRefresh: true} : prev;
-    });
-    // other options:
-    // 1. just use the receipt, ignore server;
-    // 2. socket connection to server so can push;
-    // 3. polling;
-    // 4. send the log server a desired block to be above (it hangs until it gets there)
-  };
+  const onSuccess = makeOnTransactionSuccess(setRefreshUntilBlock, "Register lender id");
   return (<>
     <ConfirmChangeLenderAddressSection
      setRefreshUntilBlock={setRefreshPendingUntilBlock}
