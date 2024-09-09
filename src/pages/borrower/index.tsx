@@ -28,6 +28,7 @@ import { Field, Label } from "../../components/fieldset";
 
 const JoinAsBorrowerForm = () => {
   const [node, setNode] = useState<string>('');
+  const rocketLendAddress = useRocketLendAddress();
   return (
     <>
       <Field>
@@ -37,7 +38,13 @@ const JoinAsBorrowerForm = () => {
           onChange={(e) => setNode(e.target.value)}
         ></Input>
       </Field>
-      <p>TODO: transaction submitter for joinAsBorrower(node)</p>
+      <TransactionSubmitter
+        buttonText="Join as Borrower"
+        address={rocketLendAddress}
+        abi={rocketLendABI}
+        functionName="joinAsBorrower"
+        args={[node]/*TODO: onSuccess refresh nodes*/}
+      />
     </>
   );
 };
