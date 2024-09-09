@@ -42,7 +42,7 @@ export function nodesQuery(
     enabled: !!(logServerUrl && address),
     queryKey: ["rocketlend", "nodes", address],
     queryFn: serverQueryFn({
-      onJSON: async ({nodes, untilBlock}: {nodes: string[], untilBlock: number}) => (
+      onJSON: async ({nodes, untilBlock}: {nodes: `0x${string}`[], untilBlock: number}) => (
         { nodes, untilBlock }
       ),
       onNotFound: async () => ({nodes: [], untilBlock: 0}),

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
+  useEnsName,
   useReadContract,
   useReadContracts,
   useWriteContract,
@@ -57,11 +58,23 @@ const JoinAsBorrowerForm = ({
   );
 };
 
+const LinkToNodeWithEns = ({ node } : { node: `0x${string}` }) => {
+  const { data: ensName, error, isPending } = useEnsName({ address: node });
+  return (
+    <Link href={`borrowers/${node}`}>{
+      isPending ? node /* TODO: show some pending indicator? */ :
+      error ? node /* TODO: show error message? */ :
+      ensName || node /* TODO: in the ensName case, can we have a tooltip or click to reveal the address too? */
+    }
+    </Link>
+  );
+};
+
 const BorrowerOverview = ({
   nodes,
   setRefreshUntilBlock
 } : {
-  nodes: string[];
+  nodes: `0x${string}`[];
   setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
 }) => {
   return (
@@ -69,7 +82,7 @@ const BorrowerOverview = ({
     <section>
       <h2>Your nodes</h2>
       <ul>
-        {nodes.map(node => (<li key={node}><Link href={`borrowers/${node}`}>{node}</Link></li>)) /*TODO: display ENS for the node if there is one*/}
+        {nodes.map(node => (<li key={node}><LinkToNodeWithEns node={node} /></li>))}
       </ul>
     </section>
     <section>
