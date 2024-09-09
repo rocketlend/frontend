@@ -19,7 +19,7 @@ import rocketLendABI from "../../rocketlend.abi";
 // TODO styles, maybe descriptions/tooltips
 const ChangeAddress = () => {
   const [requireConfirmation, setRequireConfirmation] = useState(true);
-  const [newAddress, setNewAddress] = useState('');
+  const [newAddress, setNewAddress] = useState(''); // TODO: ENS names for address input
   const rocketLendAddress = useRocketLendAddress();
   const { id: lenderId } = useParams<{ id: string }>() || { id: "" };
 
@@ -32,7 +32,7 @@ const ChangeAddress = () => {
           <h2 className="text-xl">Change lender address</h2>
         </Legend>
         <Text className="italic">
-          {"[Maybe say something here about why you'd want to do this]"}
+          You can transfer your lender ID to another address. All lending pools and claims on funds will then belong to the new address.
         </Text>
         <FieldGroup>
           {/* TODO fix spacing/alignment */}
@@ -42,7 +42,7 @@ const ChangeAddress = () => {
               <Input value={newAddress} name="new_address" onChange={(e) => setNewAddress(e.target.value)} />
             </Field>
             <CheckboxField>
-              <Label>Require confirmation</Label>
+              <Label>Require confirmation by the new address</Label>
               <Checkbox
                 aria-label="Require confirmation"
                 name="require_confirmation"
@@ -54,11 +54,11 @@ const ChangeAddress = () => {
         </FieldGroup>
       </Fieldset>
       <TransactionSubmitter
-       buttonText="Submit"
+       buttonText={`Transfer Lender Id ${lenderId}`}
        address={rocketLendAddress}
        abi={rocketLendABI}
        functionName="changeLenderAddress"
-       args={[lenderId, newAddress, !requireConfirmation]}
+       args={[BigInt(lenderId), newAddress, !requireConfirmation]}
       />
     </form>
   );
