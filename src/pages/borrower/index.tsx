@@ -1,4 +1,5 @@
 import type { NextPage } from "next";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import {
@@ -42,13 +43,14 @@ const JoinAsBorrowerForm = () => {
 };
 
 const BorrowerOverview = ({ nodes } : { nodes: string[] }) => {
-  const [selectedNode, setSelectedNode] = useState(nodes[0]);
   return (
     <>
-    <label>Node<select value={selectedNode} onChange={(e) => setSelectedNode(e.target.value)}>
-      {nodes.map(node => <option value={node}>{node}</option>) /*TODO: ENS*/}
-    </select></label>
-    <p>TODO: borrower info for node {selectedNode}</p>
+    <section>
+      <h2>Your nodes</h2>
+      <ul>
+        {nodes.map(node => (<li key={node}><Link href={`borrowers/${node}`}>{node}</Link></li>)) /*TODO: display ENS for the node if there is one*/}
+      </ul>
+    </section>
     <section>
       <h2>Join Rocket Lend as another node</h2>
       <JoinAsBorrowerForm />
