@@ -25,18 +25,16 @@ const MAX_QUERY_RANGE = 1024
 const cache = {
   blockNumber: deployBlock,
   logIndex: 0,
-  lenderIdsByAddress: {},
-  pendingLenderIdsByAddress: {},
   nodesByBorrowerAddress: {},
   pendingNodesByBorrowerAddress: {},
-  poolIdsByLenderId: {},
+  poolIdsByLenderAddress: {},
+  pendingPoolIdsByLenderAddress: {},
 }
 
 const eventNames = [[
-  'RegisterLender',
-  'PendingChangeLenderAddress',
-  'ConfirmChangeLenderAddress',
   'CreatePool',
+  'PendingTransferPool',
+  'ConfirmTransferPool',
   'JoinProtocol',
   'LeaveProtocol',
   'PendingChangeBorrowerAddress',
@@ -62,43 +60,6 @@ const updateCache = async (toBlock) => {
         const tx = await log.getTransaction()
         const desc = rocketLend.interface.parseTransaction(tx)
         switch (log.eventName) {
-          case 'RegisterLender': {
-            const address = tx.from.toLowerCase()
-            const lenderId = log.args.lender.toString()
-            cache.lenderIdsByAddress[address] ||= new Set()
-            console.log(`Adding lenderId ${lenderId} to ${tx.from}`)
-            cache.lenderIdsByAddress[address].add(lenderId)
-            break
-          }
-          case 'PendingChangeLenderAddress': {
-            const oldAddress = log.args.old.toLowerCase()
-            const newAddress = desc.args._newAddress.toLowerCase()
-            const lenderId = desc.args._lender.toString()
-            cache.pendingLenderIdsByAddress[newAddress] ||= new Set()
-            if (cache.pendingLenderIdsByAddress[oldAddress]) {
-              console.log(`Clearing pending transfer of ${lenderId} to ${log.args.old}`)
-              cache.pendingLenderIdsByAddress[oldAddress].delete(lenderId)
-            }
-            console.log(`Adding pending transfer of ${lenderId} to ${desc.args._newAddress}`)
-            cache.pendingLenderIdsByAddress[newAddress].add(lenderId)
-            break
-          }
-          case 'ConfirmChangeLenderAddress': {
-            const oldAddress = log.args.old.toLowerCase()
-            const oldPending = log.args.oldPending.toLowerCase()
-            const newAddress = (desc.name == 'changeLenderAddress' ? desc.args._newAddress : tx.from).toLowerCase()
-            const lenderId = desc.args._lender.toString()
-            cache.lenderIdsByAddress[newAddress] ||= new Set()
-            console.log(`Removing lenderId ${lenderId} from ${log.args.old}`)
-            cache.lenderIdsByAddress[oldAddress].delete(lenderId)
-            console.log(`Adding lenderId ${lenderId} to ${ethers.getAddress(newAddress)}`)
-            cache.lenderIdsByAddress[newAddress].add(lenderId)
-            if (cache.pendingLenderIdsByAddress[oldPending]) {
-              console.log(`Clearing pending transfer of ${lenderId} to ${log.args.old}`)
-              cache.pendingLenderIdsByAddress[oldPending].delete(lenderId)
-            }
-            break
-          }
           case 'JoinProtocol': {
             const node = desc.args._node.toLowerCase()
             const borrower = log.args.borrower.toLowerCase()
@@ -129,7 +90,7 @@ const updateCache = async (toBlock) => {
               cache.pendingNodesByBorrowerAddress[oldAddress].delete(node)
             }
             console.log(`Adding pending transfer of ${desc.args._node} to ${desc.args._newAddress}`)
-            cache.pendingLenderIdsByAddress[newAddress].add(node)
+            cache.pendingNodesByBorrowerAddress[newAddress].add(node)
             break
           }
           case 'ConfirmChangeBorrowerAddress': {
@@ -150,10 +111,39 @@ const updateCache = async (toBlock) => {
           }
           case 'CreatePool': {
             const poolId = log.args.id.toLowerCase()
-            const lenderId = desc.args._params.lender.toString()
-            cache.poolIdsByLenderId[lenderId] ||= new Set()
-            console.log(`Adding pool ${log.args.id} to lender ${lenderId}`)
-            cache.poolIdsByLenderId[lenderId].add(poolId)
+            const lender = tx.from.toLowerCase()
+            cache.poolIdsByLenderAddress[lender] ||= new Set()
+            console.log(`Adding pool ${log.args.id} to lender ${tx.from}`)
+            cache.poolIdsByLenderAddress[lender].add(poolId)
+            break
+          }
+          case 'PendingTransferPool': {
+            const oldAddress = log.args.old.toLowerCase()
+            const newAddress = desc.args._newAddress.toLowerCase()
+            const poolId = desc.args._poolId.toString()
+            cache.pendingPoolIdsByLenderAddress[newAddress] ||= new Set()
+            if (cache.pendingPoolIdsByLenderAddress[oldAddress]) {
+              console.log(`Clearing pending transfer of pool ${poolId} to ${log.args.old}`)
+              cache.pendingPoolIdsByLenderAddress[oldAddress].delete(poolId)
+            }
+            console.log(`Adding pending transfer of pool ${poolId} to ${desc.args._newAddress}`)
+            cache.pendingPoolIdsByLenderAddress[newAddress].add(poolId)
+            break
+          }
+          case 'ConfirmTransferPool': {
+            const oldAddress = log.args.old.toLowerCase()
+            const oldPending = log.args.oldPending.toLowerCase()
+            const newAddress = (desc.name == 'transferPool' ? desc.args._newAddress : tx.from).toLowerCase()
+            const poolId = desc.args._poolId.toString()
+            cache.poolIdsByLenderAddress[newAddress] ||= new Set()
+            console.log(`Removing pool ${poolId} from lender ${log.args.old}`)
+            cache.poolIdsByLenderAddress[oldAddress].delete(poolId)
+            console.log(`Adding pool ${poolId} to lender ${ethers.getAddress(newAddress)}`)
+            cache.poolIdsByLenderAddress[newAddress].add(poolId)
+            if (cache.pendingPoolIdsByLenderAddress[oldPending]) {
+              console.log(`Clearing pending transfer of pool ${poolId} to ${log.args.old}`)
+              cache.pendingPoolIdsByLenderAddress[oldPending].delete(poolId)
+            }
             break
           }
         }
@@ -185,30 +175,6 @@ const app = express()
 
 app.use(cors())
 
-app.get(`/lenderIds/:address(${addressRe})`, async (req, res, next) => {
-  try {
-    const address = req.params.address.toLowerCase()
-    const ids = cache.lenderIdsByAddress[address] || []
-    return res.status(200).json({
-      untilBlock: cache.blockNumber,
-      lenderIds: Array.from(ids),
-    })
-  }
-  catch (e) { next(e) }
-})
-
-app.get(`/pendingLenderIds/:address(${addressRe})`, async (req, res, next) => {
-  try {
-    const address = req.params.address.toLowerCase()
-    const ids = cache.pendingLenderIdsByAddress[address] || []
-    return res.status(200).json({
-      untilBlock: cache.blockNumber,
-      pendingLenderIds: Array.from(ids),
-    })
-  }
-  catch (e) { next(e) }
-})
-
 app.get(`/nodes/:address(${addressRe})`, async (req, res, next) => {
   try {
     const address = req.params.address.toLowerCase()
@@ -233,15 +199,28 @@ app.get(`/pendingNodes/:address(${addressRe})`, async (req, res, next) => {
   catch (e) { next(e) }
 })
 
-app.get(`/poolIds/:lenderId(${numberRe})`, async (req, res, next) => {
+app.get(`/poolIds/:address(${addressRe})`, async (req, res, next) => {
   try {
-    const ids = cache.poolIdsByLenderId[req.params.lenderId] || []
+    const address = req.params.address.toLowerCase()
+    const ids = cache.poolIdsByLenderAddress[address] || []
     return res.status(200).json({
       untilBlock: cache.blockNumber,
       poolIds: Array.from(ids),
     })
   }
   catch (e) { next (e) }
+})
+
+app.get(`/pendingPoolIds/:address(${addressRe})`, async (req, res, next) => {
+  try {
+    const address = req.params.address.toLowerCase()
+    const ids = cache.pendingPoolIdsByLenderAddress[address] || []
+    return res.status(200).json({
+      untilBlock: cache.blockNumber,
+      pendingPoolIds: Array.from(ids),
+    })
+  }
+  catch (e) { next(e) }
 })
 
 app.listen(port)
