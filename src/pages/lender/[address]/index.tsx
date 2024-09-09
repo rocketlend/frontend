@@ -7,47 +7,33 @@ import { useRocketLendAddress } from "../../../hooks/useRocketLendAddress";
 import rocketLendABI from "../../../rocketlend.abi";
 import { poolIdsQuery } from "../../../functions/logServerQueries";
 import CreateLendingPool from "../../../components/lender/create-lending-pool";
-import ChangeAddress from "../../../components/lender/change-address";
 
-const LendingPools = ({ lenderId } : { lenderId: string }) => {
+const LendingPools = ({ address } : { address: string }) => {
   const logServerUrl = useLogServerURL();
   const {
     data: poolIdsData,
     error: poolIdsError,
     refetch: refreshPoolIds,
-  } = useQuery(poolIdsQuery({logServerUrl, lenderId}));
+  } = useQuery(poolIdsQuery({logServerUrl, address}));
   return (
-    poolIdsError ? <p>Error fetching pool Ids for {lenderId}: {poolIdsError.message}</p> :
+    poolIdsError ? <p>Error fetching pool Ids for {address}: {poolIdsError.message}</p> :
     !poolIdsData ? <p>fetching pool ids...</p> :
       poolIdsData.poolIds.length ?
       <section>
         <h2>Your Lending Pools</h2>
-        <p>TODO lending pools for lender {lenderId} are: {poolIdsData.poolIds.join()}</p>
-      </section> : <p>Lender Id {lenderId} does not have any lending pools yet.</p>
+        <p>TODO lending pools for lender {address} are: {poolIdsData.poolIds.join()}</p>
+      </section> : <p>Lender {address} does not have any lending pools yet.</p>
   );
 };
 
 const Page: NextPage = () => {
-  const { id: lenderId } = useParams<{ id: string }>() || { id: "" };
+  const { address: lenderAddress } = useParams<{ address: string }>() || { id: "" };
   const { address } = useAccount();
   const rocketLendAddress = useRocketLendAddress();
-  const { data: lenderAddress } = useReadContract({
-    address: rocketLendAddress,
-    abi: rocketLendABI,
-    functionName: "lenderAddress",
-    args: [BigInt(lenderId)],
-  });
   return (
     <>
-    <LendingPools lenderId={lenderId} />
-    { address == lenderAddress &&
-      (<>
-        <CreateLendingPool />
-        <section>
-          <h2>Transfer Lender Id {lenderId}</h2>
-          <ChangeAddress />
-        </section>
-      </>) }
+    <LendingPools address={lenderAddress} />
+    { address == lenderAddress && <CreateLendingPool /> }
     </>
   );
 };
