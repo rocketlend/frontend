@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { useEnsName, useEnsAddress }  from "wagmi";
 import {
@@ -26,36 +26,66 @@ import { normalize } from "viem/ens";
 const ADDRESS_REGEXP = new RegExp("0x[0-9a-fA-F]{40}");
 
 const AddressInput = ({
-  stateVar,
-  setStateVar,
+  setAddress,
 } : {
-  stateVar: `0x${string}`;
-  setStateVar: Dispatch<SetStateAction<`0x${string}`>>;
+  setAddress: Dispatch<SetStateAction<`0x${string}`>>;
 }) => {
-    const [enteredName, setEnteredName] = useState<string>('');
-    const [enteredText, setEnteredText] = useState<string>('');
+    const [inputValue, setInputValue] = useState<string>("");
+    const [resolvedName, setResolvedName] = useState<string>("");
+    const [hasResolved, setHasResolved] = useState<boolean>(false);
     const {
-      data: ensName,
+      data: resolvedEns,
+      status: nameStatus,
       error: nameError,
-    } = useEnsName({ address: stateVar });
+    } = useEnsName({
+      address: inputValue,
+      query: { enabled: ADDRESS_REGEXP.test(inputValue) && !hasResolved }
+    });
     const {
       data: resolvedAddress,
+      status: resolveStatus,
       error: resolveError,
-    } = useEnsAddress({ name: normalize(enteredName) });
+    } = useEnsAddress({
+      name: inputValue.endsWith(".eth") && normalize(inputValue),
+      query: { enabled: inputValue.endsWith(".eth") && !hasResolved }
+    });
+    useEffect(() => {
+      if (hasResolved) return;
+      if (resolvedEns) {
+        setAddress(inputValue);
+        setInputValue(resolvedEns);
+      }
+      else if (resolvedAddress) {
+        setAddress(resolvedAddress);
+      }
+      else if (ADDRESS_REGEXP.test(inputValue)) {
+        setAddress(inputValue);
+      }
+      if (resolvedEns || resolvedAddress)
+        setHasResolved(true);
+    }, [resolvedEns, resolvedAddress, hasResolved, inputValue]);
     return (
+      <>
       <Input
-        value={ensName || resolvedAddress || enteredText}
+        value={inputValue}
         onChange={
           (e) => {
-            if (ADDRESS_REGEXP.test(e.target.value))
-              setStateVar(e.target.value as `0x${string}`);
-            else if (e.target.value.endsWith('.eth'))
-              setEnteredName(e.target.value);
-            else
-              setEnteredText(e.target.value);
+            setInputValue(e.target.value);
+            setHasResolved(false);
           }
         }
       />
+      <ul>
+      <li>DEBUG INFO</li>
+      <li>hasResolved: {hasResolved.toString()}.</li>
+      <li>resolvedName: {resolvedEns}.</li>
+      <li>nameStatus: {nameStatus}.</li>
+      <li>nameError: {nameError?.message}.</li>
+      <li>Resolved Address: {resolvedAddress}.</li>
+      <li>resolveStatus: {resolveStatus}.</li>
+      <li>resolveError: {resolveError?.message}.</li>
+      </ul>
+      </>
     );
 };
 
@@ -198,9 +228,8 @@ const CreateLendingPool = ({
               </div>
               {showAddressInput ? (
                 <div className="flex gap-2">
-                  <Input
-                    value={newAddress}
-                    onChange={(e) => setNewAddress(e.target.value)}
+                  <AddressInput
+                    setAddress={setNewAddress}
                   />
                   <Button
                     plain
