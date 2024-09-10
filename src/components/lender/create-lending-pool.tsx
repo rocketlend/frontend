@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import { useEnsName, useEnsAddress }  from "wagmi";
 import {
   Description,
   Field,
@@ -20,6 +21,9 @@ import rocketLendABI from "../../rocketlend.abi";
 import { DropIcon } from "../Icons";
 import { NULL_ADDRESS } from "../../constants";
 import type { RefreshUntilBlockType } from "../../functions/logServerRefresher";
+import { normalize } from "viem/ens";
+
+const ADDRESS_REGEXP = new RegExp("0x[0-9a-fA-F]{40}");
 
 const AddressInput = ({
   stateVar,
@@ -28,7 +32,31 @@ const AddressInput = ({
   stateVar: `0x${string}`;
   setStateVar: Dispatch<SetStateAction<`0x${string}`>>;
 }) => {
-  return false; // TODO
+    const [enteredName, setEnteredName] = useState<string>('');
+    const [enteredText, setEnteredText] = useState<string>('');
+    const {
+      data: ensName,
+      error: nameError,
+    } = useEnsName({ address: stateVar });
+    const {
+      data: resolvedAddress,
+      error: resolveError,
+    } = useEnsAddress({ name: normalize(enteredName) });
+    return (
+      <Input
+        value={ensName || resolvedAddress || enteredText}
+        onChange={
+          (e) => {
+            if (ADDRESS_REGEXP.test(e.target.value))
+              setStateVar(e.target.value as `0x${string}`);
+            else if (e.target.value.endsWith('.eth'))
+              setEnteredName(e.target.value);
+            else
+              setEnteredText(e.target.value);
+          }
+        }
+      />
+    );
 };
 
 // NOTE idk if we'll use this, but here it is just in case
