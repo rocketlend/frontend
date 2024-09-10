@@ -1,6 +1,7 @@
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { useState, useEffect } from "react";
+import { Dispatch, SetStateAction } from "react";
 import {
   poolIdsQuery,
   pendingPoolIdsQuery,
@@ -12,7 +13,43 @@ import { useLogServerURL } from "../../hooks/useLogServerURL";
 import { RPLBalance } from "../../components/RPLBalance";
 import CreateLendingPool from "../../components/lender/create-lending-pool";
 import type { RefreshUntilBlockType } from "../../functions/logServerRefresher";
-import { makeRefresher } from "../../functions/logServerRefresher";
+import { makeRefresher, makeOnTransactionSuccess } from "../../functions/logServerRefresher";
+import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
+import rocketLendABI from "../../rocketlend.abi";
+import { TransactionSubmitter } from "../../components/TransactionSubmitter";
+
+const PendingLendingPools = ({
+  address,
+  poolIds,
+  poolIdsError,
+  setRefreshUntilBlock,
+} : {
+  address: `0x${string}`;
+  poolIds: string[] | undefined;
+  poolIdsError: DefaultError | null;
+  setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
+}) => {
+  const rocketLendAddress = useRocketLendAddress();
+  const onSuccess = makeOnTransactionSuccess(setRefreshUntilBlock, "Adopt pool");
+  return (
+    poolIdsError ? <p>Error fetching incoming pool transfers for {address}: {poolIdsError.message}</p> :
+    !poolIds ? <p>fetching incoming pool transfers...</p> :
+    !!poolIds.length &&
+    <section>
+      <h2>Confirm Transfer of Pool</h2>
+      {poolIds.map(
+       id => <TransactionSubmitter
+                 buttonText={`Adopt Pool ${id}`}
+                 address={rocketLendAddress}
+                 abi={rocketLendABI}
+                 functionName="confirmTransferPool"
+                 args={[BigInt(id)]}
+                 onSuccess={onSuccess}
+              />
+      )}
+    </section>
+  );
+};
 
 const LendingPools = ({
   address,
@@ -42,14 +79,25 @@ const Page: NextPage = () => {
     error: poolIdsError,
     refetch: refreshPoolIds,
   } = useQuery(poolIdsQuery({logServerUrl, address}));
+  const {
+    data: pendingPoolIdsData,
+    error: pendingPoolIdsError,
+    refetch: refreshPendingPoolIds,
+  } = useQuery(pendingPoolIdsQuery({logServerUrl, address}));
   // TODO: add listener to events that calls refreshPoolIds on new events
   const [refreshUntilBlock, setRefreshUntilBlock] = useState<RefreshUntilBlockType>({});
-  // const [refreshPendingUntilBlock, setRefreshPendingUntilBlock] = useState<RefreshUntilBlockType>({});
+  const [refreshPendingUntilBlock, setRefreshPendingUntilBlock] = useState<RefreshUntilBlockType>({});
   useEffect(...makeRefresher(refreshUntilBlock, setRefreshUntilBlock, poolIdsData, refreshPoolIds, "poolIds"));
-  // useEffect(...makeRefresher(refreshPendingUntilBlock, setRefreshPendingUntilBlock, pendingLenderIdsData, refreshPendingLenderIds, "pendingLenderIds"));
+  useEffect(...makeRefresher(refreshPendingUntilBlock, setRefreshPendingUntilBlock, pendingPoolIdsData, refreshPendingPoolIds, "pendingPoolIds"));
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address as `0x${string}`} />
+      <PendingLendingPools
+        poolIds={pendingPoolIdsData?.pendingPoolIds}
+        poolIdsError={pendingPoolIdsError}
+        address={address as `0x${string}`}
+        setRefreshUntilBlock={setRefreshPendingUntilBlock}
+      />
       <LendingPools poolIds={poolIdsData?.poolIds} poolIdsError={poolIdsError} address={address as `0x${string}`} />
       <CreateLendingPool setRefreshUntilBlock={setRefreshUntilBlock} />
     </IfConnected>

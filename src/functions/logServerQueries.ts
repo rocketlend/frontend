@@ -59,11 +59,11 @@ export function pendingPoolIdsQuery(
     enabled: !!(logServerUrl && address),
     queryKey: ["rocketlend", "pendingPoolIds", address],
     queryFn: serverQueryFn({
-      onJSON: async ({pendingLenderIds, untilBlock}: {pendingLenderIds: string[], untilBlock: number}) => (
-        { pendingLenderIds, untilBlock }
+      onJSON: async ({pendingPoolIds, untilBlock}: {pendingPoolIds: string[], untilBlock: number}) => (
+        { pendingPoolIds, untilBlock }
       ),
-      onNotFound: async () => ({pendingLenderIds: [], untilBlock: 0}),
-      url: `${logServerUrl}/pendingLenderIds/${address}`,
+      onNotFound: async () => ({pendingPoolIds: [], untilBlock: 0}),
+      url: `${logServerUrl}/pendingPoolIds/${address}`,
     }),
   };
 };
