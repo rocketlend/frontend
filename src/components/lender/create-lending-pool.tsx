@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import {
   Description,
   Field,
@@ -18,6 +19,17 @@ import { TransactionSubmitter } from "../TransactionSubmitter";
 import rocketLendABI from "../../rocketlend.abi";
 import { DropIcon } from "../Icons";
 import { NULL_ADDRESS } from "../../constants";
+import type { RefreshUntilBlockType } from "../../functions/logServerRefresher";
+
+const AddressInput = ({
+  stateVar,
+  setStateVar,
+} : {
+  stateVar: `0x${string}`;
+  setStateVar: Dispatch<SetStateAction<`0x${string}`>>;
+}) => {
+  return false; // TODO
+};
 
 // NOTE idk if we'll use this, but here it is just in case
 // TODO make it do something
@@ -35,8 +47,15 @@ export const PoolsEmptyStateUI = () => {
   );
 };
 
-const CreateLendingPool = () => {
+const CreateLendingPool = ({
+  setRefreshUntilBlock,
+} : {
+  setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
+}
+) => {
   // QUESTION should these be declared BigInts or converted when preparing the transaction?
+  // Answer: I think they should probably be strings in the UI (with validation) that get converted to BigInts for the transaction
+  // unless there is a browser input that's actually good for numbers with decimal points (fixed precision in this case) (and better than just a string)?
   const [interestRate, setInterestRate] = useState(0);
   const [endTime, setEndTime] = useState(0);
   const [andSupply, setAndSupply] = useState(0);
@@ -187,7 +206,7 @@ const CreateLendingPool = () => {
           abi={rocketLendABI}
           functionName="createPool"
           args={[
-            [lenderAddress, interestRate, endTime],
+            [interestRate, endTime],
             andSupply,
             allowance,
             borrowers,
