@@ -26,7 +26,7 @@ import { useLogServerURL } from "../../hooks/useLogServerURL";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import { makeRefresher, makeOnTransactionSuccess } from "../../functions/logServerRefresher";
 import type { RefreshUntilBlockType } from "../../functions/logServerRefresher";
-import { Input } from "../../components/input";
+import { AddressInput } from "../../components/AddressInput";
 import { Field, Label } from "../../components/fieldset";
 
 const JoinAsBorrowerForm = ({
@@ -34,17 +34,14 @@ const JoinAsBorrowerForm = ({
 } : {
   setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
 }) => {
-  const [node, setNode] = useState<string>('');
+  const [node, setNode] = useState<`0x${string}`>("0x");
   const rocketLendAddress = useRocketLendAddress();
   const onSuccess = makeOnTransactionSuccess(setRefreshUntilBlock, "Join borrower");
   return (
     <>
       <Field>
         <Label>Node address</Label>
-        <Input
-          value={node}
-          onChange={(e) => setNode(e.target.value)}
-        ></Input>
+        <AddressInput setAddress={setNode}></AddressInput>
       </Field>
       <TransactionSubmitter
         buttonText="Join as Borrower"
