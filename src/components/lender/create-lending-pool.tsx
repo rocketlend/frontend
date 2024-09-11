@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import { useEnsName, useEnsAddress }  from "wagmi";
 import {
   Description,
   Field,
@@ -10,6 +9,7 @@ import {
   Legend,
 } from "../fieldset";
 import { Text, Strong } from "../text";
+import { AddressInput } from "../AddressInput";
 import { Input } from "../input";
 import { Button } from "../button";
 import { Radio, RadioField, RadioGroup } from "../radio";
@@ -21,73 +21,6 @@ import rocketLendABI from "../../rocketlend.abi";
 import { DropIcon } from "../Icons";
 import { NULL_ADDRESS } from "../../constants";
 import type { RefreshUntilBlockType } from "../../functions/logServerRefresher";
-import { normalize } from "viem/ens";
-
-const ADDRESS_REGEXP = new RegExp("0x[0-9a-fA-F]{40}");
-
-const AddressInput = ({
-  setAddress,
-} : {
-  setAddress: Dispatch<SetStateAction<`0x${string}`>>;
-}) => {
-    const [inputValue, setInputValue] = useState<string>("");
-    const [resolvedName, setResolvedName] = useState<string>("");
-    const [hasResolved, setHasResolved] = useState<boolean>(false);
-    const {
-      data: resolvedEns,
-      status: nameStatus,
-      error: nameError,
-    } = useEnsName({
-      address: inputValue,
-      query: { enabled: ADDRESS_REGEXP.test(inputValue) && !hasResolved }
-    });
-    const {
-      data: resolvedAddress,
-      status: resolveStatus,
-      error: resolveError,
-    } = useEnsAddress({
-      name: inputValue.endsWith(".eth") && normalize(inputValue),
-      query: { enabled: inputValue.endsWith(".eth") && !hasResolved }
-    });
-    useEffect(() => {
-      if (hasResolved) return;
-      if (resolvedEns) {
-        setAddress(inputValue);
-        setInputValue(resolvedEns);
-      }
-      else if (resolvedAddress) {
-        setAddress(resolvedAddress);
-      }
-      else if (ADDRESS_REGEXP.test(inputValue)) {
-        setAddress(inputValue);
-      }
-      if (resolvedEns || resolvedAddress)
-        setHasResolved(true);
-    }, [resolvedEns, resolvedAddress, hasResolved, inputValue]);
-    return (
-      <>
-      <Input
-        value={inputValue}
-        onChange={
-          (e) => {
-            setInputValue(e.target.value);
-            setHasResolved(false);
-          }
-        }
-      />
-      <ul>
-      <li>DEBUG INFO</li>
-      <li>hasResolved: {hasResolved.toString()}.</li>
-      <li>resolvedName: {resolvedEns}.</li>
-      <li>nameStatus: {nameStatus}.</li>
-      <li>nameError: {nameError?.message}.</li>
-      <li>Resolved Address: {resolvedAddress}.</li>
-      <li>resolveStatus: {resolveStatus}.</li>
-      <li>resolveError: {resolveError?.message}.</li>
-      </ul>
-      </>
-    );
-};
 
 // NOTE idk if we'll use this, but here it is just in case
 // TODO make it do something
@@ -120,7 +53,7 @@ const CreateLendingPool = ({
   const [allowance, setAllowance] = useState(0);
   const [allowAllAddresses, setAllowAllAddresses] = useState(true);
   const [allowedAddresses, setAllowedAddresses] = useState<string[]>([]);
-  const [newAddress, setNewAddress] = useState("");
+  const [newAddress, setNewAddress] = useState<`0x${string}`>("0x");
   const [showAddressInput, setShowAddressInput] = useState(false);
   const rocketLendAddress = useRocketLendAddress();
   const { address: lenderAddress } = useAccount();
@@ -134,7 +67,7 @@ const CreateLendingPool = ({
     const addressToAdd = newAddress.trim();
     if (addressToAdd) {
       setAllowedAddresses([...allowedAddresses, addressToAdd]);
-      setNewAddress("");
+      setNewAddress("0x");
       setShowAddressInput(false);
     }
   };
