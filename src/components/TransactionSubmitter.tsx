@@ -12,7 +12,8 @@ export const TransactionSubmitter: FC<{
   args?: Array<any>; // TODO what is the correct type? need to infer via abi?
   buttonText: string;
   onSuccess?: (receipt: TransactionReceipt) => void;
-}> = ({ address, abi, functionName, args, buttonText, onSuccess }) => {
+  prepareArgs?: () => any[];
+}> = ({ address, abi, functionName, args, buttonText, onSuccess, prepareArgs}) => {
   const {
     writeContractAsync,
     data: hash,
@@ -27,8 +28,10 @@ export const TransactionSubmitter: FC<{
     isLoading,
     isSuccess: isConfirmed,
   } = useWaitForTransactionReceipt({ hash, query: { enabled: isWritten } });
-  const handler = () => {
-    writeContractAsync({ address, abi, functionName, args }).then((hash) =>
+  const handleSubmit = () => {
+    const preparedArgs = prepareArgs ? prepareArgs() : args;
+
+    writeContractAsync({ address, abi, functionName, args: preparedArgs }).then((hash) =>
       addRecentTransaction({ hash, description: functionName })
     );
   };
@@ -43,7 +46,7 @@ export const TransactionSubmitter: FC<{
       <Button
         className=""
         disabled={isPending || (isWritten && !(errorOnWait || isConfirmed))}
-        onClick={handler}
+        onClick={handleSubmit}
       >
         {buttonText}
       </Button>

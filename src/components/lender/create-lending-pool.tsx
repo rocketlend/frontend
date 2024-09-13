@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import { parseUnits, parseEther } from "viem";
 import {
   Description,
   Field,
@@ -40,17 +41,16 @@ export const PoolsEmptyStateUI = () => {
 
 const CreateLendingPool = ({
   setRefreshUntilBlock,
-} : {
+}: {
   setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
-}
-) => {
+}) => {
   // QUESTION should these be declared BigInts or converted when preparing the transaction?
   // Answer: I think they should probably be strings in the UI (with validation) that get converted to BigInts for the transaction
   // unless there is a browser input that's actually good for numbers with decimal points (fixed precision in this case) (and better than just a string)?
   const [interestRate, setInterestRate] = useState(0);
   const [endTime, setEndTime] = useState(0);
-  const [andSupply, setAndSupply] = useState(0);
-  const [allowance, setAllowance] = useState(0);
+  const [andSupply, setAndSupply] = useState("");
+  const [allowance, setAllowance] = useState("");
   const [allowAllAddresses, setAllowAllAddresses] = useState(true);
   const [allowedAddresses, setAllowedAddresses] = useState<string[]>([]);
   const [newAddress, setNewAddress] = useState<`0x${string}`>("0x");
@@ -80,6 +80,16 @@ const CreateLendingPool = ({
   const borrowers = useMemo(() => {
     allowAllAddresses ? [NULL_ADDRESS] : allowedAddresses;
   }, [allowAllAddresses, allowedAddresses]);
+
+  const prepareArgs = () => {
+    // which of these parsing functions is more appropriate here?
+    // const parsedAndSupply = parseUnits(andSupply, 18) // is 18 decimal points a sensible choice?
+    const parsedAndSupply = parseEther(andSupply);
+    // const parsedAndSupply = parseUnits(allowance, 18) // is 18 decimal points a sensible choice?
+    const parsedAllowance = parseEther(allowance);
+
+    return [[interestRate, endTime], parsedAndSupply, parsedAllowance, borrowers];
+  };
 
   return (
     <form className="sm:flex sm:flex-col gap-8 space-y-8 rounded-xl p-6 sm:mx-auto sm:max-w-prose border border-zinc-800 bg-zinc-800/40">
@@ -112,7 +122,7 @@ const CreateLendingPool = ({
               <Input
                 value={andSupply}
                 name="and_supply"
-                onChange={(e) => setAndSupply(Number(e.target.value))}
+                onChange={(e) => setAndSupply(e.target.value)}
               />
             </Field>
             <Field>
@@ -120,7 +130,7 @@ const CreateLendingPool = ({
               <Input
                 value={allowance}
                 name="allowance"
-                onChange={(e) => setAllowance(Number(e.target.value))}
+                onChange={(e) => setAllowance(e.target.value)}
               />
             </Field>
 
@@ -161,14 +171,8 @@ const CreateLendingPool = ({
               </div>
               {showAddressInput ? (
                 <div className="flex gap-2">
-                  <AddressInput
-                    setAddress={setNewAddress}
-                  />
-                  <Button
-                    plain
-                    type="button"
-                    onClick={handleAddAddress}
-                  >
+                  <AddressInput setAddress={setNewAddress} />
+                  <Button plain type="button" onClick={handleAddAddress}>
                     <PlusCircleIcon />
                   </Button>
                 </div>
@@ -195,12 +199,8 @@ const CreateLendingPool = ({
           address={rocketLendAddress}
           abi={rocketLendABI}
           functionName="createPool"
-          args={[
-            [interestRate, endTime],
-            andSupply,
-            allowance,
-            borrowers,
-          ]}
+          args={[[interestRate, endTime], andSupply, allowance, borrowers]}
+          prepareArgs={prepareArgs}
         />
       </div>
     </form>
