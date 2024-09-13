@@ -104,6 +104,7 @@ const CreateLendingPool = ({
               <Input
                 value={interestRate}
                 name="interest_rate"
+                type="number"
                 onChange={(e) => setInterestRate(Number(e.target.value))}
               />
             </Field>
