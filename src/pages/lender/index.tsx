@@ -17,6 +17,7 @@ import { makeRefresher, makeOnTransactionSuccess } from "../../functions/logServ
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
 import rocketLendABI from "../../rocketlend.abi";
 import { TransactionSubmitter } from "../../components/TransactionSubmitter";
+import { RPLAllowance, ApproveRPLForm } from "../../components/rpl-allowance";
 
 const PendingLendingPools = ({
   address,
@@ -92,6 +93,8 @@ const Page: NextPage = () => {
   return (
     <IfConnected accountStatus={status}>
       <RPLBalance accountAddress={address as `0x${string}`} />
+      <RPLAllowance />
+      <ApproveRPLForm />
       <PendingLendingPools
         poolIds={pendingPoolIdsData?.pendingPoolIds}
         poolIdsError={pendingPoolIdsError}
