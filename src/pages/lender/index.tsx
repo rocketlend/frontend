@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { DefaultError } from "@tanstack/react-query";
 import { IfConnected } from "../../components/IfConnected";
 import { useLogServerURL } from "../../hooks/useLogServerURL";
-import { RPLBalance } from "../../components/RPLBalance";
+import { RPLBalance } from "../../components/rpl-balance";
 import CreateLendingPool from "../../components/lender/create-lending-pool";
 import type { RefreshUntilBlockType } from "../../functions/logServerRefresher";
 import { makeRefresher, makeOnTransactionSuccess } from "../../functions/logServerRefresher";
@@ -92,7 +92,7 @@ const Page: NextPage = () => {
   useEffect(...makeRefresher(refreshPendingUntilBlock, setRefreshPendingUntilBlock, pendingPoolIdsData, refreshPendingPoolIds, "pendingPoolIds"));
   return (
     <IfConnected accountStatus={status}>
-      <RPLBalance accountAddress={address as `0x${string}`} />
+      <RPLBalance />
       <RPLAllowance />
       <ApproveRPLForm />
       <PendingLendingPools

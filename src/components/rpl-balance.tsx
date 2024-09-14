@@ -1,9 +1,10 @@
 import { formatEther } from "viem";
-import { useReadContract } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { useRocketAddress } from "../hooks/useRocketAddress";
 import rplABI from "../rocketTokenRPL.abi";
 
-export const RPLBalance = ({ accountAddress }: { accountAddress: `0x${string}` }) => {
+export const RPLBalance = () => {
+  const { address: accountAddress } = useAccount();
   const {
     data: rplAddress,
     error: rplAddressError,
@@ -17,7 +18,8 @@ export const RPLBalance = ({ accountAddress }: { accountAddress: `0x${string}` }
     abi: rplABI,
     address: rplAddress,
     functionName: "balanceOf",
-    args: [accountAddress],
+    args: [accountAddress as `0x${string}`],
+    query: { enabled: !!accountAddress }
   });
   return (
       typeof rplBalance == 'bigint' ?

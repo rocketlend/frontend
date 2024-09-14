@@ -2,7 +2,7 @@ import type { NextPage } from "next";
 import { useParams } from "next/navigation";
 import { useAccount, useReadContract } from "wagmi";
 import { useRocketLendAddress } from "../../../hooks/useRocketLendAddress";
-import { RPLBalance } from "../../../components/RPLBalance";
+import { RPLBalance } from "../../../components/rpl-balance";
 import rocketLendABI from "../../../rocketlend.abi";
 import ChangeAddress from "../../../components/borrower/change-address";
 import { NULL_ADDRESS } from "../../../constants";
@@ -28,7 +28,7 @@ const Page: NextPage = () => {
     { !!address &&
       <section>
         <h2>Connected account RPL balance</h2>
-        <RPLBalance accountAddress={address as `0x${string}`} />
+        <RPLBalance />
       </section>
       /* TODO: show node staked RPL balance too */
     }
