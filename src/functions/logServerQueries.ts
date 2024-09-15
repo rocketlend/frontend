@@ -25,7 +25,7 @@ export function pendingNodesQuery(
     enabled: !!(logServerUrl && address),
     queryKey: ["rocketlend", "pendingNodes", address],
     queryFn: serverQueryFn({
-      onJSON: async ({pendingNodes, untilBlock}: {pendingNodes: string[], untilBlock: number}) => (
+      onJSON: async ({pendingNodes, untilBlock}: {pendingNodes: `0x${string}`[], untilBlock: number}) => (
         { pendingNodes, untilBlock }
       ),
       onNotFound: async () => ({pendingNodes: [], untilBlock: 0}),

@@ -14,10 +14,7 @@ import { formatEther } from "viem";
 import type { TransactionReceipt } from "viem";
 import rocketLendABI from "../../rocketlend.abi";
 import rplABI from "../../rocketTokenRPL.abi";
-import {
-  nodesQuery,
-  pendingNodesQuery,
-} from "../../functions/logServerQueries";
+import { nodesQuery, pendingNodesQuery } from "../../functions/logServerQueries";
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { TransactionSubmitter } from "../../components/TransactionSubmitter";
@@ -67,6 +64,34 @@ const LinkToNodeWithEns = ({ node } : { node: `0x${string}` }) => {
   );
 };
 
+const PendingNodes = ({
+  nodes,
+  setRefreshUntilBlock
+} : {
+  nodes: `0x${string}`[] | undefined;
+  setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
+}) => {
+  const rocketLendAddress = useRocketLendAddress();
+  const onSuccess = makeOnTransactionSuccess(setRefreshUntilBlock, "Adopt node");
+  const { address } = useAccount();
+  return (
+    !!nodes?.length &&
+    <section>
+      <h2>Confirm Transfer of Node to Borrower Address</h2>
+      {nodes.map(
+        node => <TransactionSubmitter
+                   buttonText={`Adopt node ${node}`}
+                   address={rocketLendAddress}
+                   abi={rocketLendABI}
+                   functionName="confirmChangeBorrowerAddress"
+                   args={[node]}
+                   onSuccess={onSuccess}
+                />
+      )}
+    </section>
+  );
+};
+
 const BorrowerOverview = ({
   nodes,
   setRefreshUntilBlock
@@ -98,17 +123,30 @@ const Page: NextPage = () => {
     error: nodesError,
     refetch: refreshNodes,
   } = useQuery(nodesQuery({logServerUrl, address}));
+  const {
+    data: pendingNodesData,
+    error: pendingNodesError,
+    refetch: refreshPendingNodes,
+  } = useQuery(pendingNodesQuery({logServerUrl, address}));
   const [refreshUntilBlock, setRefreshUntilBlock] = useState<RefreshUntilBlockType>({});
+  const [refreshPendingUntilBlock, setRefreshPendingUntilBlock] = useState<RefreshUntilBlockType>({});
   useEffect(...makeRefresher(refreshUntilBlock, setRefreshUntilBlock, nodesData, refreshNodes, "nodes"));
+  useEffect(...makeRefresher(refreshPendingUntilBlock, setRefreshPendingUntilBlock, pendingNodesData, refreshPendingNodes, "pendingNodes"));
   return (
     <IfConnected accountStatus={status}>
     { nodesError ? <p>Error fetching nodes for connected address: {nodesError.message}</p> :
-      nodesData?.nodes.length ?
-      <BorrowerOverview nodes={nodesData.nodes} setRefreshUntilBlock={setRefreshUntilBlock} /> :
-      <section>
-        <h2>Not in Rocket Lend: Join with your node</h2>
-        <JoinAsBorrowerForm setRefreshUntilBlock={setRefreshUntilBlock} />
-      </section>
+      <>
+      {pendingNodesError ? <p>Error fetching incoming node transfers for connected address: {pendingNodesError.message}</p> :
+       <PendingNodes nodes={pendingNodesData?.pendingNodes} setRefreshUntilBlock={setRefreshPendingUntilBlock} /> }
+      {
+        nodesData?.nodes.length ?
+        <BorrowerOverview nodes={nodesData.nodes} setRefreshUntilBlock={setRefreshUntilBlock} /> :
+        <section>
+          <h2>Not in Rocket Lend: Join with your node</h2>
+          <JoinAsBorrowerForm setRefreshUntilBlock={setRefreshUntilBlock} />
+        </section>
+      }
+      </>
     }
     </IfConnected>
   );
