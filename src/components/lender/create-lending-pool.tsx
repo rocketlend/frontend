@@ -88,7 +88,12 @@ const CreateLendingPool = ({
     // const parsedAndSupply = parseUnits(allowance, 18) // is 18 decimal points a sensible choice?
     const parsedAllowance = parseEther(allowance);
 
-    return [[interestRate, endTime], parsedAndSupply, parsedAllowance, borrowers];
+    return [
+      [interestRate, endTime],
+      parsedAndSupply,
+      parsedAllowance,
+      borrowers,
+    ];
   };
 
   return (
