@@ -16,14 +16,11 @@ const timeOptions: timeOption[] = [
   { label: "3 Years", timeToAdd: { years: 3 } },
 ];
 
-const formatDuration = (d: luxon.DurationLike) => {
-  const d1 = Duration.fromDurationLike(d).shiftTo("years", "months", "weeks", "days").normalize().toObject();
+const formatDuration = (d: luxon.Duration) => {
+  const d1 = d.rescale().shiftTo("years", "months", "weeks", "days").normalize().toObject();
   const d2 = Duration.fromDurationLike(Object.fromEntries(Object.entries(d1).filter(([k, v]) => v)));
   return d2.toHuman({maximumFractionDigits: 0});
 };
-
-const getSeconds = (d: luxon.DurationLike) =>
-  Duration.fromDurationLike(d).as("seconds")
 
 const DateTimeInput = ({
   name,
@@ -32,22 +29,24 @@ const DateTimeInput = ({
   name: string;
   setSeconds: Dispatch<SetStateAction<number>>;
 }) => {
-  const [selected, setSelected] = useState<luxon.DurationLike>({ years: 1 });
-  const [customValue, setCustomValue] = useState<string>(DateTime.now().toFormat("yyyy-MM-dd'T'HH:mm"));
+  const [selectedTime, setSelectedTime] = useState<luxon.DateTime>(DateTime.now().plus({ years: 1}));
+  const [dateString, setDateString] = useState<string>(DateTime.now().toFormat("yyyy-MM-dd'T'HH:mm"));
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelection = (value: luxon.DurationLike) => {
     if (value === null) {
       setIsOpen(true);
     } else {
-      setSelected(value);
-      setSeconds(getSeconds(selected));
+      const time = DateTime.now().plus(value);
+      setSelectedTime(time);
+      setSeconds(time.toSeconds());
     }
   };
 
   const handleCustomSubmit = () => {
-    setSelected(DateTime.fromISO(customValue).diffNow().rescale());
-    setSeconds(getSeconds(selected));
+    const time = DateTime.fromISO(dateString);
+    setSelectedTime(time);
+    setSeconds(time.toSeconds());
     setIsOpen(false);
   };
 
@@ -69,8 +68,8 @@ const DateTimeInput = ({
         </ListboxOption>
       </Listbox>
       <Description>
-        <p>Ending at: {DateTime.now().plus(Duration.fromDurationLike(selected)).toLocaleString(DateTime.DATETIME_FULL)}</p>
-        <p>({formatDuration(selected)} from now)</p>
+        <p>Ending at: {selectedTime.toLocaleString(DateTime.DATETIME_FULL)}</p>
+        <p>({formatDuration(selectedTime.diffNow())} from now)</p>
       </Description>
 
       <Dialog
@@ -82,15 +81,15 @@ const DateTimeInput = ({
         <DialogBody>
         <input
           type="datetime-local"
-          value={customValue}
-          onChange={(e) => setCustomValue(e.target.value)}
+          value={dateString}
+          onChange={(e) => setDateString(e.target.value)}
         />
         </DialogBody>
         <DialogActions>
           <Button plain onClick={() => setIsOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCustomSubmit} {...{disabled: !customValue}}>Set Duration</Button>
+          <Button onClick={handleCustomSubmit} {...{disabled: !dateString}}>Set Duration</Button>
         </DialogActions>
       </Dialog>
     </Field>
