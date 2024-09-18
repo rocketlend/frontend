@@ -37,16 +37,18 @@ const DateTimeInput = ({
     if (value === null) {
       setIsOpen(true);
     } else {
-      const time = DateTime.now().plus(value);
+      const seconds = Math.round(DateTime.now().plus(value).toSeconds());
+      const time = DateTime.fromSeconds(seconds);
       setSelectedTime(time);
-      setSeconds(time.toSeconds());
+      setSeconds(seconds);
     }
   };
 
   const handleCustomSubmit = () => {
-    const time = DateTime.fromISO(dateString);
+    const seconds = Math.round(DateTime.fromISO(dateString).toSeconds());
+    const time = DateTime.fromSeconds(seconds);
     setSelectedTime(time);
-    setSeconds(time.toSeconds());
+    setSeconds(seconds);
     setIsOpen(false);
   };
 

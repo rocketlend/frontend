@@ -109,14 +109,12 @@ const CreateLendingPool = ({
                 onChange={(e) => setInterestRate(Number(e.target.value))}
               />
             </Field>
-            {/* TODO deal with date/time */}
             <Field>
               <Label>End time</Label>
               <DateTimeInput name="End time" setSeconds={setEndTime} />
             </Field>
             <Field>
               <Label>{"Initial RPL supply (optional)"}</Label>
-              {/* TODO indicate how much RPL is approved/available */}
               <Input
                 value={andSupply}
                 name="and_supply"
