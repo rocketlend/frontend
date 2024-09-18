@@ -23,7 +23,7 @@ const formatDuration = (d: luxon.DurationLike) => {
 
 const DateTimeInput = ({ name }: { name: string }) => {
   const [selected, setSelected] = useState<luxon.DurationLike>({ years: 1 });
-  const [customValue, setCustomValue] = useState<string>("");
+  const [customValue, setCustomValue] = useState<string>(DateTime.now().toFormat("yyyy-MM-dd'T'HH:mm"));
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelection = (value: luxon.DurationLike) => {
@@ -68,14 +68,17 @@ const DateTimeInput = ({ name }: { name: string }) => {
       >
         <DialogTitle>Custom Loan Duration</DialogTitle>
         <DialogBody>
-        {/*TODO: fill in with now or current value; also ensure filled before submit*/}
-        <input type="datetime-local" onChange={(e) => setCustomValue(e.target.value)} />
+        <input
+          type="datetime-local"
+          value={customValue}
+          onChange={(e) => setCustomValue(e.target.value)}
+        />
         </DialogBody>
         <DialogActions>
           <Button plain onClick={() => setIsOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCustomSubmit}>Set Duration</Button>
+          <Button onClick={handleCustomSubmit} {...{disabled: !customValue}}>Set Duration</Button>
         </DialogActions>
       </Dialog>
     </Field>
