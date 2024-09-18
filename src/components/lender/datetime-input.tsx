@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { DateTime, Duration } from "luxon";
 import { Listbox, ListboxLabel, ListboxOption } from "../listbox";
 import { Description, Field } from "../fieldset";
@@ -21,7 +22,16 @@ const formatDuration = (d: luxon.DurationLike) => {
   return d2.toHuman({maximumFractionDigits: 0});
 };
 
-const DateTimeInput = ({ name }: { name: string }) => {
+const getSeconds = (d: luxon.DurationLike) =>
+  Duration.fromDurationLike(d).as("seconds")
+
+const DateTimeInput = ({
+  name,
+  setSeconds,
+}: {
+  name: string;
+  setSeconds: Dispatch<SetStateAction<number>>;
+}) => {
   const [selected, setSelected] = useState<luxon.DurationLike>({ years: 1 });
   const [customValue, setCustomValue] = useState<string>(DateTime.now().toFormat("yyyy-MM-dd'T'HH:mm"));
   const [isOpen, setIsOpen] = useState(false);
@@ -31,11 +41,13 @@ const DateTimeInput = ({ name }: { name: string }) => {
       setIsOpen(true);
     } else {
       setSelected(value);
+      setSeconds(getSeconds(selected));
     }
   };
 
   const handleCustomSubmit = () => {
     setSelected(DateTime.fromISO(customValue).diffNow().rescale());
+    setSeconds(getSeconds(selected));
     setIsOpen(false);
   };
 

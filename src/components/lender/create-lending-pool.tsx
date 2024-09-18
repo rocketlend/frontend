@@ -112,7 +112,7 @@ const CreateLendingPool = ({
             {/* TODO deal with date/time */}
             <Field>
               <Label>End time</Label>
-              <DateTimeInput name="end_time" />
+              <DateTimeInput name="End time" setSeconds={setEndTime} />
             </Field>
             <Field>
               <Label>{"Initial RPL supply (optional)"}</Label>

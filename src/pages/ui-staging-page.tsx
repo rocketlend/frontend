@@ -14,7 +14,6 @@ const Page: NextPage = () => {
       <EditPoolForm />
       <PoolsEmptyStateUI />
       <ExplorerTable />
-      <DateTimeInput name="End Time" />
     </div>
   )
 };
