@@ -69,7 +69,7 @@ const LendingPools = ({
       <section>
         <h2>Your Lending Pools</h2>
         <ul>
-          {poolIds.map(id => (<li key={id}><Link href={id}>Pool {id}</Link></li>))}
+          {poolIds.map(id => (<li key={id}><Link href={`pool/${id}`}>Pool {id}</Link></li>))}
         </ul>
       </section> : <p>Lender {address} does not have any lending pools yet.</p>
   );
