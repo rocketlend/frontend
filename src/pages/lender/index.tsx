@@ -1,4 +1,5 @@
 import type { NextPage } from "next";
+import Link from "next/link";
 import { useAccount } from "wagmi";
 import { useState, useEffect } from "react";
 import { Dispatch, SetStateAction } from "react";
@@ -67,7 +68,9 @@ const LendingPools = ({
       poolIds.length ?
       <section>
         <h2>Your Lending Pools</h2>
-        <p>TODO lending pools for lender {address} are: {poolIds.join()}</p>
+        <ul>
+          {poolIds.map(id => (<li key={id}><Link href={id}>Pool {id}</Link></li>))}
+        </ul>
       </section> : <p>Lender {address} does not have any lending pools yet.</p>
   );
 };
