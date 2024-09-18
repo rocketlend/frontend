@@ -9,11 +9,10 @@ export const TransactionSubmitter: FC<{
   address: `0x${string}`;
   abi: Abi;
   functionName: string;
-  args?: Array<any>; // TODO what is the correct type? need to infer via abi?
+  args?: Array<any> | (() => Array<any>); // TODO what is the correct type? need to infer via abi?
   buttonText: string;
   onSuccess?: (receipt: TransactionReceipt) => void;
-  prepareArgs?: () => any[];
-}> = ({ address, abi, functionName, args, buttonText, onSuccess, prepareArgs}) => {
+}> = ({ address, abi, functionName, args, buttonText, onSuccess }) => {
   const {
     writeContractAsync,
     data: hash,
@@ -29,7 +28,7 @@ export const TransactionSubmitter: FC<{
     isSuccess: isConfirmed,
   } = useWaitForTransactionReceipt({ hash, query: { enabled: isWritten } });
   const handleSubmit = () => {
-    const preparedArgs = prepareArgs ? prepareArgs() : args;
+    const preparedArgs = Array.isArray(args) ? args : args ? args() : [];
 
     writeContractAsync({ address, abi, functionName, args: preparedArgs }).then((hash) =>
       addRecentTransaction({ hash, description: functionName })

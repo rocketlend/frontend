@@ -202,8 +202,7 @@ const CreateLendingPool = ({
           address={rocketLendAddress}
           abi={rocketLendABI}
           functionName="createPool"
-          args={[[interestRate, endTime], andSupply, allowance, borrowers]}
-          prepareArgs={prepareArgs}
+          args={prepareArgs}
         />
       </div>
     </form>
