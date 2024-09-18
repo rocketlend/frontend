@@ -111,7 +111,7 @@ const updateCache = async (toBlock) => {
             break
           }
           case 'CreatePool': {
-            const poolId = log.args.id.toLowerCase()
+            const poolId = log.args.id.toString()
             const lender = tx.from.toLowerCase()
             cache.poolIdsByLenderAddress[lender] ||= new Set()
             console.log(`Adding pool ${log.args.id} to lender ${tx.from}`)
