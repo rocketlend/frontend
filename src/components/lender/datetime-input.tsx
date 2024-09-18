@@ -15,6 +15,12 @@ const timeOptions: timeOption[] = [
   { label: "3 Years", timeToAdd: { years: 3 } },
 ];
 
+const formatDuration = (d: luxon.DurationLike) => {
+  const d1 = Duration.fromDurationLike(d).shiftTo("years", "months", "weeks", "days").normalize().toObject();
+  const d2 = Duration.fromDurationLike(Object.fromEntries(Object.entries(d1).filter(([k, v]) => v)));
+  return d2.toHuman({maximumFractionDigits: 0});
+};
+
 const DateTimeInput = ({ name }: { name: string }) => {
   const [selected, setSelected] = useState<luxon.DurationLike>({ years: 1 });
   const [customValue, setCustomValue] = useState<string>("");
@@ -29,7 +35,7 @@ const DateTimeInput = ({ name }: { name: string }) => {
   };
 
   const handleCustomSubmit = () => {
-    setSelected(DateTime.fromISO(customValue).diffNow().normalize());
+    setSelected(DateTime.fromISO(customValue).diffNow().rescale());
     setIsOpen(false);
   };
 
@@ -52,7 +58,7 @@ const DateTimeInput = ({ name }: { name: string }) => {
       </Listbox>
       <Description>
         <p>Ending at: {DateTime.now().plus(Duration.fromDurationLike(selected)).toLocaleString(DateTime.DATETIME_FULL)}</p>
-        <p>({Duration.fromDurationLike(selected).toHuman()} from now)</p>
+        <p>({formatDuration(selected)} from now)</p>
       </Description>
 
       <Dialog
