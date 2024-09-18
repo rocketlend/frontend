@@ -125,7 +125,7 @@ const JoinAsBorrowerForm = ({
 const LinkToNodeWithEns = ({ node } : { node: `0x${string}` }) => {
   const { data: ensName, error, isPending } = useEnsName({ address: node });
   return (
-    <Link href={`borrowers/${node}`}>{
+    <Link href={`borrower/${node}`}>{
       isPending ? node /* TODO: show some pending indicator? */ :
       error ? node /* TODO: show error message? */ :
       ensName || node /* TODO: in the ensName case, can we have a tooltip or click to reveal the address too? */
