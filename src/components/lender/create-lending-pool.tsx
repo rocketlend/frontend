@@ -82,10 +82,7 @@ const CreateLendingPool = ({
   }, [allowAllAddresses, allowedAddresses]);
 
   const prepareArgs = () => {
-    // which of these parsing functions is more appropriate here?
-    // const parsedAndSupply = parseUnits(andSupply, 18) // is 18 decimal points a sensible choice?
     const parsedAndSupply = parseEther(andSupply);
-    // const parsedAndSupply = parseUnits(allowance, 18) // is 18 decimal points a sensible choice?
     const parsedAllowance = parseEther(allowance);
 
     return [
