@@ -23,7 +23,7 @@ const Page: NextPage = () => {
   const { result: params } = results?.[0] || {};
   const { result: state } = results?.[1] || {};
   return (params && state ? (<section>
-    <h2>Lending Pool {poolId}</h2>
+    <h2>Lending Pool {poolId.toString()}</h2>
     <ul>
     <li>Interest Rate: {params.interestRate}%</li>
     <li>(DEBUG) End Time in seconds: {params.endTime.toString()}</li>

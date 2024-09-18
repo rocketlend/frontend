@@ -23,6 +23,7 @@ import rocketLendABI from "../../rocketlend.abi";
 import { DropIcon } from "../Icons";
 import { NULL_ADDRESS } from "../../constants";
 import type { RefreshUntilBlockType } from "../../functions/logServerRefresher";
+import { makeOnTransactionSuccess } from "../../functions/logServerRefresher";
 
 // NOTE idk if we'll use this, but here it is just in case
 // TODO make it do something
@@ -79,6 +80,8 @@ const CreateLendingPool = ({
   };
 
   const borrowers = allowAllAddresses ? [NULL_ADDRESS] : allowedAddresses;
+
+  const onSuccess = makeOnTransactionSuccess(setRefreshUntilBlock, "createPool");
 
   const prepareArgs = () => {
     const parsedAndSupply = parseEther(andSupply);
@@ -196,6 +199,7 @@ const CreateLendingPool = ({
           abi={rocketLendABI}
           functionName="createPool"
           args={prepareArgs}
+          onSuccess={onSuccess}
         />
       </div>
     </form>
