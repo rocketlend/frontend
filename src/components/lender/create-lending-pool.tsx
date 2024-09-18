@@ -102,7 +102,7 @@ const CreateLendingPool = ({
         <FieldGroup>
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
             <Field>
-              <Label>Interest rate</Label>
+              <Label>Interest rate (APR %)</Label>
               <Input
                 value={interestRate}
                 name="interest_rate"
