@@ -48,6 +48,7 @@ const updateCache = async (toBlock) => {
     console.log(`About to run queryFilter ${fromBlock}...${untilBlock}`)
     const logs = await rocketLend.queryFilter(eventNames, fromBlock, untilBlock)
     console.log(`Got ${logs.length} logs from filter`)
+    let processed
     logs.sort((a, b) => a.blockNumber < b.blockNumber ? -1 :
                         a.blockNumber > b.blockNumber ? +1 :
                         a.index < b.index ? -1 :
@@ -149,14 +150,16 @@ const updateCache = async (toBlock) => {
         }
         cache.blockNumber = log.blockNumber
         cache.logIndex = log.index
+        processed = true
       }
       else {
         console.log(`Skipping ${log.blockNumber}:${log.index} vs ${cache.blockNumber}:${cache.logIndex}`)
       }
     }
-    if (!logs.length) {
+    if (!processed) {
       cache.blockNumber = untilBlock
       cache.logIndex = 0
+      console.log(`No logs processed, so marking cache done to ${untilBlock}:0`)
     }
   }
   console.log(`Updated events to ${toBlock}`)
