@@ -55,6 +55,7 @@ export const AddressInput = ({
           }
         }
       />
+      {/*
       <ul>
       <li>DEBUG INFO</li>
       <li>hasResolved: {hasResolved.toString()}.</li>
@@ -64,7 +65,7 @@ export const AddressInput = ({
       <li>Resolved Address: {resolvedAddress}.</li>
       <li>resolveStatus: {resolveStatus}.</li>
       <li>resolveError: {resolveError?.message}.</li>
-      </ul>
+      </ul>*/}
       </>
     );
 };
