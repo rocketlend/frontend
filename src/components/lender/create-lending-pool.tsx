@@ -11,6 +11,7 @@ import {
 } from "../fieldset";
 import { Text, Strong } from "../text";
 import { AddressInput } from "../AddressInput";
+import DateTimeInput from "./datetime-input";
 import { Input } from "../input";
 import { Button } from "../button";
 import { Radio, RadioField, RadioGroup } from "../radio";
@@ -113,11 +114,7 @@ const CreateLendingPool = ({
             {/* TODO deal with date/time */}
             <Field>
               <Label>End time</Label>
-              <Input
-                value={endTime}
-                name="end_time"
-                onChange={(e) => setEndTime(Number(e.target.value))}
-              />
+              <DateTimeInput name="end_time" />
             </Field>
             <Field>
               <Label>{"Initial RPL supply (optional)"}</Label>

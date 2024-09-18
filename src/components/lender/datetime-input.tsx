@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DateTime } from "luxon";
+import { DateTime, Duration } from "luxon";
 import { Listbox, ListboxLabel, ListboxOption } from "../listbox";
 import { Description, Field } from "../fieldset";
 import { Dialog, DialogBody, DialogTitle, DialogActions } from "../dialog";
@@ -8,17 +8,16 @@ import { Button } from "../button";
 type timeOption = { label: string; timeToAdd: luxon.DurationLike };
 
 const timeOptions: timeOption[] = [
-  { label: "30 Minutes", timeToAdd: { minutes: 30 } },
-  { label: "1 Hour", timeToAdd: { hours: 1 } },
-  { label: "1 Day", timeToAdd: { days: 1 } },
-  { label: "1 Week", timeToAdd: { weeks: 1 } },
   { label: "1 Month", timeToAdd: { months: 1 } },
+  { label: "3 Months", timeToAdd: { months: 3 } },
+  { label: "6 Months", timeToAdd: { months: 6 } },
   { label: "1 Year", timeToAdd: { years: 1 } },
+  { label: "3 Years", timeToAdd: { years: 3 } },
 ];
 
 const DateTimeInput = ({ name }: { name: string }) => {
-  const [selected, setSelected] = useState<luxon.DurationLike>({ months: 1 });
-  const [datetime, setDatetime] = useState(DateTime.now());
+  const [selected, setSelected] = useState<luxon.DurationLike>({ years: 1 });
+  const [customValue, setCustomValue] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelection = (value: luxon.DurationLike) => {
@@ -30,8 +29,7 @@ const DateTimeInput = ({ name }: { name: string }) => {
   };
 
   const handleCustomSubmit = () => {
-    setSelected({seconds: 0});
-    setDatetime(DateTime.now()); // TODO make this actually use the value from the dialog
+    setSelected(DateTime.fromISO(customValue).diffNow().normalize());
     setIsOpen(false);
   };
 
@@ -40,8 +38,8 @@ const DateTimeInput = ({ name }: { name: string }) => {
       <Listbox
         name={name}
         onChange={handleSelection}
-        placeholder="1 Month"
-        defaultValue={timeOptions[4].timeToAdd}
+        placeholder="1 Year"
+        defaultValue={timeOptions[3].timeToAdd}
       >
         {timeOptions.map((option, idx) => (
           <ListboxOption key={idx} value={option.timeToAdd}>
@@ -53,7 +51,8 @@ const DateTimeInput = ({ name }: { name: string }) => {
         </ListboxOption>
       </Listbox>
       <Description>
-        {/*TODO indicate the date/time that corresponds with selected option*/}
+        <p>Ending at: {DateTime.now().plus(Duration.fromDurationLike(selected)).toLocaleString(DateTime.DATETIME_FULL)}</p>
+        <p>({Duration.fromDurationLike(selected).toHuman()} from now)</p>
       </Description>
 
       <Dialog
@@ -61,13 +60,16 @@ const DateTimeInput = ({ name }: { name: string }) => {
         onClose={() => setIsOpen(false)}
         className="relative z-50"
       >
-        <DialogTitle></DialogTitle>
-        <DialogBody></DialogBody>
+        <DialogTitle>Custom Loan Duration</DialogTitle>
+        <DialogBody>
+        {/*TODO: fill in with now or current value; also ensure filled before submit*/}
+        <input type="datetime-local" onChange={(e) => setCustomValue(e.target.value)} />
+        </DialogBody>
         <DialogActions>
           <Button plain onClick={() => setIsOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCustomSubmit}>Set custom date</Button>
+          <Button onClick={handleCustomSubmit}>Set Duration</Button>
         </DialogActions>
       </Dialog>
     </Field>
