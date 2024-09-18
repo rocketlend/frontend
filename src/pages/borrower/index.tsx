@@ -37,17 +37,17 @@ const JoinAsBorrowerForm = ({
   const { address } = useAccount();
   const [node, setNode] = useState<`0x${string}`>("0x");
   const rocketLendAddress = useRocketLendAddress();
-  const { data: rocketStorageAddress } = useRocketAddress("rocketStorage");
+  const { data: rocketStorageAddress, error: rocketStorageAddressError } = useRocketAddress("rocketStorage");
   const { data: rocketNodeManagerAddress } = useRocketAddress("rocketNodeManager");
   // TODO: is it better to useReadContracts?
-  const { data: nodeWithdrawalAddress } = useReadContract({
+  const { data: nodeWithdrawalAddress, refetch: refreshWithdrawalAddress } = useReadContract({
     address: rocketStorageAddress,
     abi: rocketStorageABI,
     functionName: 'getNodeWithdrawalAddress',
     args: [node],
     query: { enabled: node.length == 42 },
   });
-  const { data: nodePendingWithdrawalAddress } = useReadContract({
+  const { data: nodePendingWithdrawalAddress, refetch: refreshPendingWithdrawalAddress } = useReadContract({
     address: rocketStorageAddress,
     abi: rocketStorageABI,
     functionName: 'getNodePendingWithdrawalAddress',
@@ -62,6 +62,9 @@ const JoinAsBorrowerForm = ({
     query: { enabled: node.length == 42 },
   });
   const onSuccess = makeOnTransactionSuccess(setRefreshUntilBlock, "Join borrower");
+  const onSuccessAndRefresh = (receipt: TransactionReceipt) => {
+    return refreshWithdrawalAddress().then(() => onSuccess(receipt));
+  };
   return (
     <>
       <Field>
@@ -74,7 +77,9 @@ const JoinAsBorrowerForm = ({
         <li>nodeWithdrawalAddress: {nodeWithdrawalAddress}</li>
         <li>nodePendingWithdrawalAddress: {nodePendingWithdrawalAddress}</li>
       </ul>*/}
-      {node.length == 42 && (
+      {!rocketStorageAddress ?
+        <p>Error fetching rocket storage address: {rocketStorageAddressError?.toString()}</p> :
+       node.length == 42 && (
         !nodeExists ? <p>{node} is not a Rocket Pool node address</p> :
         (nodeWithdrawalAddress == address && nodePendingWithdrawalAddress == rocketLendAddress) ||
         (nodeWithdrawalAddress == rocketLendAddress && address == node) ?
@@ -84,7 +89,7 @@ const JoinAsBorrowerForm = ({
             abi={rocketLendABI}
             functionName="joinAsBorrower"
             args={[node]}
-            onSuccess={onSuccess}
+            onSuccess={onSuccessAndRefresh}
           /> :
         nodeWithdrawalAddress == rocketLendAddress ?
           <>
@@ -95,12 +100,22 @@ const JoinAsBorrowerForm = ({
               abi={rocketLendABI}
               functionName="joinAsBorrower"
               args={[node]}
-              onSuccess={onSuccess}
+              onSuccess={onSuccessAndRefresh}
             />
           </>
             :
         nodeWithdrawalAddress == address ?
-          <p>Please first set the node's pending withdrawal address to Rocket Lend ({rocketLendAddress}) then you will be able to join</p> :
+          <>
+            <p>Please first set the node's pending withdrawal address to Rocket Lend ({rocketLendAddress}) then you will be able to join.</p>
+            <TransactionSubmitter
+              buttonText="Set Pending Withdrawal Address to Rocket Lend"
+              address={rocketStorageAddress}
+              abi={rocketStorageABI}
+              functionName="setWithdrawalAddress"
+              args={[node, rocketLendAddress, false]}
+              onSuccess={(receipt) => refreshPendingWithdrawalAddress({})}
+            />
+          </> :
           <p>You can only join from the node's current withdrawal address ({nodeWithdrawalAddress}); connect as that and try again.</p>
       )}
     </>
