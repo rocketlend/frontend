@@ -14,6 +14,8 @@ import { formatEther } from "viem";
 import type { TransactionReceipt } from "viem";
 import rocketLendABI from "../../rocketlend.abi";
 import rplABI from "../../rocketTokenRPL.abi";
+import rocketStorageABI from "../../rocketStorage.abi";
+import rocketNodeManagerABI from "../../rocketNodeManager.abi";
 import { nodesQuery, pendingNodesQuery } from "../../functions/logServerQueries";
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
@@ -21,6 +23,7 @@ import { TransactionSubmitter } from "../../components/TransactionSubmitter";
 import { IfConnected } from "../../components/IfConnected";
 import { useLogServerURL } from "../../hooks/useLogServerURL";
 import { useRocketLendAddress } from "../../hooks/useRocketLendAddress";
+import { useRocketAddress } from "../../hooks/useRocketAddress";
 import { makeRefresher, makeOnTransactionSuccess } from "../../functions/logServerRefresher";
 import type { RefreshUntilBlockType } from "../../functions/logServerRefresher";
 import { AddressInput } from "../../components/AddressInput";
@@ -31,8 +34,33 @@ const JoinAsBorrowerForm = ({
 } : {
   setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
 }) => {
+  const { address } = useAccount();
   const [node, setNode] = useState<`0x${string}`>("0x");
   const rocketLendAddress = useRocketLendAddress();
+  const { data: rocketStorageAddress } = useRocketAddress("rocketStorage");
+  const { data: rocketNodeManagerAddress } = useRocketAddress("rocketNodeManager");
+  // TODO: is it better to useReadContracts?
+  const { data: nodeWithdrawalAddress } = useReadContract({
+    address: rocketStorageAddress,
+    abi: rocketStorageABI,
+    functionName: 'getNodeWithdrawalAddress',
+    args: [node],
+    query: { enabled: node.length == 42 },
+  });
+  const { data: nodePendingWithdrawalAddress } = useReadContract({
+    address: rocketStorageAddress,
+    abi: rocketStorageABI,
+    functionName: 'getNodePendingWithdrawalAddress',
+    args: [node],
+    query: { enabled: node.length == 42 },
+  });
+  const { data: nodeExists } = useReadContract({
+    address: rocketNodeManagerAddress,
+    abi: rocketNodeManagerABI,
+    functionName: 'getNodeExists',
+    args: [node],
+    query: { enabled: node.length == 42 },
+  });
   const onSuccess = makeOnTransactionSuccess(setRefreshUntilBlock, "Join borrower");
   return (
     <>
@@ -40,14 +68,41 @@ const JoinAsBorrowerForm = ({
         <Label>Node address</Label>
         <AddressInput setAddress={setNode}></AddressInput>
       </Field>
-      <TransactionSubmitter
-        buttonText="Join as Borrower"
-        address={rocketLendAddress}
-        abi={rocketLendABI}
-        functionName="joinAsBorrower"
-        args={[node]}
-        onSuccess={onSuccess}
-      />
+      {/*<ul>
+        <li>RP DEBUG info</li>
+        <li>nodeExists: {nodeExists?.toString() || 'none'}</li>
+        <li>nodeWithdrawalAddress: {nodeWithdrawalAddress}</li>
+        <li>nodePendingWithdrawalAddress: {nodePendingWithdrawalAddress}</li>
+      </ul>*/}
+      {node.length == 42 && (
+        !nodeExists ? <p>{node} is not a Rocket Pool node address</p> :
+        (nodeWithdrawalAddress == address && nodePendingWithdrawalAddress == rocketLendAddress) ||
+        (nodeWithdrawalAddress == rocketLendAddress && address == node) ?
+          <TransactionSubmitter
+            buttonText="Join as Borrower"
+            address={rocketLendAddress}
+            abi={rocketLendABI}
+            functionName="joinAsBorrower"
+            args={[node]}
+            onSuccess={onSuccess}
+          /> :
+        nodeWithdrawalAddress == rocketLendAddress ?
+          <>
+            <p>Warning: the node's withdrawal address is already Rocket Lend. When you join, the borrower address will be the node itself (not the currently connected address).</p>
+            <TransactionSubmitter
+              buttonText="Join Node as Borrower"
+              address={rocketLendAddress}
+              abi={rocketLendABI}
+              functionName="joinAsBorrower"
+              args={[node]}
+              onSuccess={onSuccess}
+            />
+          </>
+            :
+        nodeWithdrawalAddress == address ?
+          <p>Please first set the node's pending withdrawal address to Rocket Lend ({rocketLendAddress}) then you will be able to join</p> :
+          <p>You can only join from the node's current withdrawal address ({nodeWithdrawalAddress}); connect as that and try again.</p>
+      )}
     </>
   );
 };
