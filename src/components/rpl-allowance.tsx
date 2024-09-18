@@ -1,5 +1,6 @@
 import { formatEther, parseEther } from "viem";
 import { Input } from "./input";
+import { Switch } from "./switch";
 import { useState } from "react";
 import { useAccount, useReadContract } from "wagmi";
 import { useRocketAddress } from "../hooks/useRocketAddress";
@@ -14,9 +15,12 @@ export const RPLAllowance = () => {
   } = useRocketAddress("rocketTokenRPL");
   const rocketLendAddress = useRocketLendAddress();
   const { address } = useAccount();
+  const [showForm, setShowForm] = useState<boolean>(false);
+  const [amount, setAmount] = useState<string>("1000");
   const {
     data: rplAllowance,
     error: rplAllowanceError,
+    refetch: refreshAllowance,
   } = useReadContract({
     abi: rplABI,
     address: rplAddress,
@@ -26,33 +30,24 @@ export const RPLAllowance = () => {
   });
   return (
     typeof rplAllowance == 'bigint' ?
-      <p>RPL Allowance to Rocket Lend: {formatEther(rplAllowance)} RPL</p>
+      <>
+      <p>Approved for Rocket Lend: {formatEther(rplAllowance)} RPL. ⚙️
+      <Switch checked={showForm} onChange={setShowForm} /></p>
+      {showForm && rplAddress && (<>
+      <Input value={amount} onChange={(e) => setAmount(e.target.value)} />
+      <TransactionSubmitter
+       buttonText={`Let Rocket Lend contract spend up to ${amount} RPL`}
+       address={rplAddress}
+       abi={rplABI}
+       functionName="approve"
+       args={[rocketLendAddress, parseEther(amount)]}
+       onSuccess={(receipt) => refreshAllowance({})}
+      /></>)}
+      </>
     : rplAllowanceError ?
       <p>ERROR fetching RPL allowance: {rplAllowanceError.message}</p>
+    : rplAddressError ?
+      <p>ERROR fetching RPL address: {rplAddressError.message}</p>
     : <p>querying RPL allowance...</p>
   );
-};
-
-export const ApproveRPLForm = () => {
-  const {
-    data: rplAddress,
-    error: rplAddressError,
-  } = useRocketAddress("rocketTokenRPL");
-  const rocketLendAddress = useRocketLendAddress();
-  const [amount, setAmount] = useState<string>("1000");
-  return (<>
-    <Input
-      value={amount}
-      onChange={(e) => setAmount(e.target.value)}
-    />
-    {rplAddress ?
-     <TransactionSubmitter
-      buttonText={`Approve Rocket Lend contract spending up to ${amount} RPL`}
-      address={rplAddress}
-      abi={rplABI}
-      functionName="approve"
-      args={[rocketLendAddress, parseEther(amount)]}
-     />
-     : <p>Error fetching RPL address: {rplAddressError?.message}</p>}
-  </>);
 };
