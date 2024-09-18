@@ -6,6 +6,7 @@ import { RPLBalance } from "../../../components/rpl-balance";
 import rocketLendABI from "../../../rocketlend.abi";
 import ChangeAddress from "../../../components/borrower/change-address";
 import { NULL_ADDRESS } from "../../../constants";
+import { TransactionSubmitter } from "../../../components/TransactionSubmitter";
 
 const Loans = ({ node } : { node: `0x${string}` }) => {
   return (<p>TODO list loans for node {node}</p>);
@@ -16,7 +17,7 @@ const Page: NextPage = () => {
   const node: `0x${string}` = nodeParam.startsWith("0x") ? nodeParam as `0x${string}` : NULL_ADDRESS;
   const { address } = useAccount();
   const rocketLendAddress = useRocketLendAddress();
-  const { data: borrowerData } = useReadContract({
+  const { data: borrowerData, refetch: refreshBorrowerData } = useReadContract({
     address: rocketLendAddress,
     abi: rocketLendABI,
     functionName: "borrowers",
@@ -42,6 +43,14 @@ const Page: NextPage = () => {
            <h2>Change Borrower Address</h2>
            <ChangeAddress />
          </section>
+         <TransactionSubmitter
+           buttonText="Leave Rocket Lend"
+           address={rocketLendAddress}
+           abi={rocketLendABI}
+           functionName="leaveAsBorrower"
+           args={[node]}
+           onSuccess={(receipt) => refreshBorrowerData({})}
+         />
        </>) }
   </>);
 };
