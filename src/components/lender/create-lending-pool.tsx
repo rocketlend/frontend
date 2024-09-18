@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { parseUnits, parseEther } from "viem";
 import {
@@ -78,9 +78,7 @@ const CreateLendingPool = ({
     setAllowedAddresses(newAddresses);
   };
 
-  const borrowers = useMemo(() => {
-    allowAllAddresses ? [NULL_ADDRESS] : allowedAddresses;
-  }, [allowAllAddresses, allowedAddresses]);
+  const borrowers = allowAllAddresses ? [NULL_ADDRESS] : allowedAddresses;
 
   const prepareArgs = () => {
     const parsedAndSupply = parseEther(andSupply);
