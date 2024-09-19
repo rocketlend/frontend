@@ -23,7 +23,7 @@ export const RPLBalance = () => {
   });
   return (
       typeof rplBalance == 'bigint' ?
-      <p>Balance: {formatEther(rplBalance)} RPL</p> :
+      <p className="text-lg">Balance: {formatEther(rplBalance)} RPL</p> :
       <ul>
         <li>ERROR GETTING RPL BALANCE, DEBUG INFO BELOW</li>
         <li>

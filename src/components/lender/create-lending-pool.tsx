@@ -109,10 +109,7 @@ const CreateLendingPool = ({
                 onChange={(e) => setInterestRate(Number(e.target.value))}
               />
             </Field>
-            <Field>
-              <Label>End time</Label>
               <DateTimeInput name="End time" setSeconds={setEndTime} />
-            </Field>
             <Field>
               <Label>{"Initial RPL supply (optional)"}</Label>
               <Input
@@ -185,13 +182,14 @@ const CreateLendingPool = ({
           )}
         </FieldGroup>
       </Fieldset>
-      <div className="sm:self-end space-x-4">
+      <div className="sm:self-end flex gap-4">
         {/* TODO make this button clear addresses as well */}
         <Button type="reset" plain>
           Clear
         </Button>
         <TransactionSubmitter
           buttonText="Submit"
+          className=""
           address={rocketLendAddress}
           abi={rocketLendABI}
           functionName="createPool"

@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { DateTime, Duration } from "luxon";
 import { Listbox, ListboxLabel, ListboxOption } from "../listbox";
-import { Description, Field } from "../fieldset";
+import { Description, Field, Label } from "../fieldset";
 import { Dialog, DialogBody, DialogTitle, DialogActions } from "../dialog";
 import { Button } from "../button";
 
@@ -54,6 +54,7 @@ const DateTimeInput = ({
 
   return (
     <Field>
+      <Label>End time</Label>
       <Listbox
         name={name}
         onChange={handleSelection}
@@ -69,7 +70,7 @@ const DateTimeInput = ({
           <ListboxLabel>Custom</ListboxLabel>
         </ListboxOption>
       </Listbox>
-      <Description>
+      <Description className="text-xs font-thin">
         <p>Ending at: {selectedTime.toLocaleString(DateTime.DATETIME_FULL)}</p>
         <p>({formatDuration(selectedTime.diffNow())} from now)</p>
       </Description>
