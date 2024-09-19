@@ -46,9 +46,6 @@ const CreateLendingPool = ({
 }: {
   setRefreshUntilBlock: Dispatch<SetStateAction<RefreshUntilBlockType>>;
 }) => {
-  // QUESTION should these be declared BigInts or converted when preparing the transaction?
-  // Answer: I think they should probably be strings in the UI (with validation) that get converted to BigInts for the transaction
-  // unless there is a browser input that's actually good for numbers with decimal points (fixed precision in this case) (and better than just a string)?
   const [interestRate, setInterestRate] = useState(0);
   const [endTime, setEndTime] = useState(0);
   const [andSupply, setAndSupply] = useState("");
